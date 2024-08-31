@@ -152,7 +152,7 @@ function gameLoop() {
     // Display collision counter
     ctx.fillStyle = 'black';
     ctx.font = `${HEIGHT * 0.05}px Arial`;
-    const counterText = `Collisions: ${collisionCount}`;
+    const counterText = `${collisionCount} bonks`;
     const textWidth = ctx.measureText(counterText).width;
     ctx.fillText(counterText, WIDTH - textWidth - WIDTH * 0.01, HEIGHT * 0.05);
 
