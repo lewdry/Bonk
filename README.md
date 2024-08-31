@@ -1,5 +1,11 @@
-# bonk.github.io
+# bonk!
 Bouncing bonking balls.
+
 A basic (yes very basic) game of bouncing.
-'Fully featured' on desktop, currently relies on mouse interaction but some mobile/touch behaviour works.
+
+Tap a ball to stop it. Grab and throw it. Double click to reset the screen.
+
+Watch the counter count. 
+
+Thrilling, that's bonk!
 
