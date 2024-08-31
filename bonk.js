@@ -180,10 +180,10 @@ function gameLoop(currentTime) {
 
         // Display collision counter
         ctx.fillStyle = 'black';
-        ctx.font = `${Math.min(canvas.height * 0.05, 24)}px`;
+        ctx.font = '16px Serif';
         const counterText = `${collisionCount} bonks`;
         const textWidth = ctx.measureText(counterText).width;
-        ctx.fillText(counterText, canvas.width - textWidth - 10, Math.min(canvas.height * 0.05, 24));
+        ctx.fillText(counterText, canvas.width - textWidth - 10, 16);
 
         lastTime = currentTime;
     }
