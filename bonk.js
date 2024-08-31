@@ -131,7 +131,7 @@ function resizeCanvas() {
 }
 
 function resetGame() {
-    balls = Array.from({ length: 1 }, () => new Ball());
+    balls = Array.from({ length: 15 }, () => new Ball());
     collisionCount = 0;
 }
 
