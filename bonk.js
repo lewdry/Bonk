@@ -103,28 +103,24 @@ function startCountdown() {
     const countdownElement = document.getElementById('countdown');
     let countdown = 5; // Start from 5 seconds
 
-    function updateCountdown() {
-        if (countdown > 0) {
-            countdownElement.textContent = `Game starting in ${countdown}...`;
-            countdown--;
-            setTimeout(updateCountdown, 1000);
-        } else {
-            countdownElement.textContent = 'Go!';
-            setTimeout(() => {
-                document.getElementById('splashScreen').style.display = 'none';
-                gameRunning = true;
-            }, 1000);
-        }
-    }
+    countdownElement.textContent = `starting in ${countdown}...`;
 
-    updateCountdown();
+    const interval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+            countdownElement.textContent = `starting in ${countdown}...`;
+        } else {
+            countdownElement.textContent = ''; // Clear countdown text
+            clearInterval(interval); // Stop countdown
+            gameRunning = true;
+        }
+    }, 1000);
 }
+
 // Show splash screen and hide after 5 seconds
 function showSplashScreen() {
-    const splashScreen = document.getElementById('splashScreen');
     splashScreen.style.display = 'flex';
     startCountdown();
-}
     setTimeout(() => {
         splashScreen.style.display = 'none';
     }, 5000);
@@ -252,3 +248,6 @@ function handleDoubleTap(event) {
 
 // Initialize the game when the page loads
 window.onload = initGame;
+
+// Show splash screen on page load
+window.addEventListener('load', showSplashScreen);
