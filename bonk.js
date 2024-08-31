@@ -208,6 +208,9 @@ function handleStart(event) {
     const pos = getEventPos(event);
     interactionStartPos = pos;
 
+    // Initialize lastCursorTime to the current time when an interaction starts
+    lastCursorTime = Date.now();
+
     for (const ball of balls) {
         if (ball.checkGrabbed(pos)) {
             grabbedBall = ball;
