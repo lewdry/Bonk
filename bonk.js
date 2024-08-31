@@ -207,12 +207,11 @@ function handleStart(event) {
     event.preventDefault();
     const currentTime = Date.now();
     const pos = getEventPos(event);
+    interactionStartPos = pos;
 
-    if (currentTime - lastInteractionTime < 300) {
-        handleDoubleTap(event);
-    }
-    lastInteractionTime = currentTime;
-
+ // Initialize lastCursorTime to the current time when an interaction starts
+    lastCursorTime = Date.now();
+    
     // Handle touch start for grabbing
     for (const ball of balls) {
         if (ball.checkGrabbed(pos)) {
