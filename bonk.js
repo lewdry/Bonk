@@ -1,7 +1,10 @@
 // Constants
-const ASPECT_RATIO = 1.2 / 1;
-const SCALE_FACTOR = 0.7; // 70% of the visible area
-let WIDTH, HEIGHT;
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
+const splashScreen = document.getElementById('splashScreen');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 // Ball class
 class Ball {
@@ -88,6 +91,35 @@ let collisionCount = 0;
 let grabbedBall = null;
 let mouseStartPos = null;
 let lastClickTime = 0;
+
+// Update the countdown every second
+function startCountdown() {
+    const countdownElement = document.getElementById('countdown');
+    let countdown = 5; // Start from 5 seconds
+
+    countdownElement.textContent = `starting in ${countdown}...`;
+
+    const interval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+            countdownElement.textContent = `starting in ${countdown}...`;
+        } else {
+            countdownElement.textContent = ''; // Clear countdown text
+            clearInterval(interval); // Stop countdown
+        }
+    }, 1000);
+}
+
+// Show splash screen and hide after 5 seconds
+function showSplashScreen() {
+    splashScreen.style.display = 'flex';
+    startCountdown();
+    setTimeout(() => {
+        splashScreen.style.display = 'none';
+    }, 5000);
+}
+
+
 
 function initGame() {
     canvas = document.getElementById('gameCanvas');
@@ -207,3 +239,7 @@ function handleMouseMove(event) {
 
 // Initialize the game when the page loads
 window.onload = initGame;
+
+// Show splash screen on page load
+window.addEventListener('load', showSplashScreen);
+
