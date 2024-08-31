@@ -1,5 +1,5 @@
 // Constants
-const ASPECT_RATIO = 965 / 580;
+const ASPECT_RATIO = 1 / 1;
 const SCALE_FACTOR = 0.7; // 70% of the visible area
 let WIDTH, HEIGHT;
 
