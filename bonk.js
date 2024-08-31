@@ -12,9 +12,82 @@ function resizeCanvas() {
 // Initial canvas size
 resizeCanvas();
 
-// Ball class (unchanged)
+// Ball class
 class Ball {
-    // ... (Ball class implementation remains the same)
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.radius = Math.random() * 20 + 10; // Random size between 10 and 30
+        this.mass = Math.PI * this.radius ** 2;
+        this.x = Math.random() * (canvas.width - 2 * this.radius) + this.radius;
+        this.y = Math.random() * (canvas.height - 2 * this.radius) + this.radius;
+        this.dx = (Math.random() - 0.5) * 5;
+        this.dy = (Math.random() - 0.5) * 5;
+        this.color = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
+        this.grabbed = false;
+    }
+
+    move() {
+        if (!this.grabbed) {
+            this.x += this.dx;
+            this.y += this.dy;
+
+            if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+                this.dx = -this.dx;
+            }
+            if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
+                this.dy = -this.dy;
+            }
+        }
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    checkCollision(other) {
+        const distance = Math.hypot(this.x - other.x, this.y - other.y);
+        return distance < this.radius + other.radius;
+    }
+
+    resolveCollision(other) {
+        if (this.checkCollision(other)) {
+            const normalX = other.x - this.x;
+            const normalY = other.y - this.y;
+            const normalLength = Math.hypot(normalX, normalY);
+            const unitNormalX = normalX / normalLength;
+            const unitNormalY = normalY / normalLength;
+
+            const relVelX = other.dx - this.dx;
+            const relVelY = other.dy - this.dy;
+            const velAlongNormal = relVelX * unitNormalX + relVelY * unitNormalY;
+
+            if (velAlongNormal > -0.01) return; // Small threshold to prevent sticking
+
+            const restitution = 1;
+            let impulse = -(1 + restitution) * velAlongNormal;
+            impulse /= 1 / this.mass + 1 / other.mass;
+
+            const impulseX = impulse * unitNormalX;
+            const impulseY = impulse * unitNormalY;
+
+            this.dx -= impulseX / this.mass;
+            this.dy -= impulseY / this.mass;
+            other.dx += impulseX / other.mass;
+            other.dy += impulseY / other.mass;
+        }
+    }
+
+    checkGrabbed(pos) {
+        const distance = Math.hypot(this.x - pos.x, this.y - pos.y);
+        return distance < this.radius;
+    }
 }
 
 // Game variables
