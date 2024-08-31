@@ -239,26 +239,12 @@ function handleMove(event) {
 function handleEnd(event) {
     event.preventDefault();
     if (grabbedBall) {
-        const currentTime = Date.now();
         const pos = getEventPos(event);
-        const timeDelta = (currentTime - lastCursorTime) / 1000; // Convert to seconds
-
-        if (timeDelta > 0) {
-            const velocityX = (pos.x - lastCursorPosition.x) / timeDelta;
-            const velocityY = (pos.y - lastCursorPosition.y) / timeDelta;
-
-            // Apply a scaling factor to adjust the ball's velocity
-            const velocityScale = 1; // Adjust this value to change the "throw" strength
-            grabbedBall.dx = velocityX * velocityScale;
-            grabbedBall.dy = velocityY * velocityScale;
-        }
-
+        grabbedBall.dx = (pos.x - interactionStartPos.x) / 10;
+        grabbedBall.dy = (pos.y - interactionStartPos.y) / 10;
         grabbedBall.grabbed = false;
         grabbedBall = null;
     }
-    
-    lastCursorPosition = null;
-    lastCursorTime = 0;
 }
 
 function handleDoubleTap(event) {
