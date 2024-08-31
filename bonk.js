@@ -203,12 +203,6 @@ function getEventPos(event) {
 
 function handleStart(event) {
     event.preventDefault();
-    const currentTime = Date.now();
-    if (currentTime - lastInteractionTime < 300) {
-        handleDoubleTap(event);
-    }
-    lastInteractionTime = currentTime;
-
     const pos = getEventPos(event);
     interactionStartPos = pos;
 
@@ -243,7 +237,13 @@ function handleEnd(event) {
 
 function handleDoubleTap(event) {
     event.preventDefault();
-    resetGame();
+    const currentTime = Date.now();
+
+    if (currentTime - lastInteractionTime < 300) {
+        // This is considered a double tap
+        resetGame();
+    }
+    lastInteractionTime = currentTime;
 }
 
 // Initialize the game when the page loads
