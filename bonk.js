@@ -3,8 +3,14 @@ const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 const splashScreen = document.getElementById('splashScreen');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// Set canvas size to match window
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+// Initial canvas size
+resizeCanvas();
 
 // Ball class
 class Ball {
@@ -13,12 +19,12 @@ class Ball {
     }
 
     reset() {
-        this.radius = Math.floor(Math.random() * (WIDTH * 0.03 - WIDTH * 0.01 + 1)) + WIDTH * 0.01;
+        this.radius = Math.random() * 20 + 10; // Random size between 10 and 30
         this.mass = Math.PI * this.radius ** 2;
-        this.x = Math.random() * (WIDTH - 2 * this.radius) + this.radius;
-        this.y = Math.random() * (HEIGHT - 2 * this.radius) + this.radius;
-        this.dx = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1) * (WIDTH / 965);
-        this.dy = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1) * (HEIGHT / 580);
+        this.x = Math.random() * (canvas.width - 2 * this.radius) + this.radius;
+        this.y = Math.random() * (canvas.height - 2 * this.radius) + this.radius;
+        this.dx = (Math.random() - 0.5) * 5;
+        this.dy = (Math.random() - 0.5) * 5;
         this.color = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
         this.grabbed = false;
     }
@@ -28,16 +34,16 @@ class Ball {
             this.x += this.dx;
             this.y += this.dy;
 
-            if (this.x - this.radius <= 0 || this.x + this.radius >= WIDTH) {
+            if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
                 this.dx = -this.dx;
             }
-            if (this.y - this.radius <= 0 || this.y + this.radius >= HEIGHT) {
+            if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
                 this.dy = -this.dy;
             }
         }
     }
 
-    draw(ctx) {
+    draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
@@ -62,7 +68,7 @@ class Ball {
             const relVelY = other.dy - this.dy;
             const velAlongNormal = relVelX * unitNormalX + relVelY * unitNormalY;
 
-            if (velAlongNormal > 0) return;
+            if (velAlongNormal > -0.01) return; // Small threshold to prevent sticking
 
             const restitution = 1;
             let impulse = -(1 + restitution) * velAlongNormal;
@@ -85,12 +91,12 @@ class Ball {
 }
 
 // Game variables
-let canvas, ctx;
 let balls = [];
 let collisionCount = 0;
 let grabbedBall = null;
 let mouseStartPos = null;
 let lastClickTime = 0;
+let gameRunning = false;
 
 // Update the countdown every second
 function startCountdown() {
@@ -106,6 +112,7 @@ function startCountdown() {
         } else {
             countdownElement.textContent = ''; // Clear countdown text
             clearInterval(interval); // Stop countdown
+            gameRunning = true;
         }
     }, 1000);
 }
@@ -119,15 +126,13 @@ function showSplashScreen() {
     }, 5000);
 }
 
-
-
 function initGame() {
-    canvas = document.getElementById('gameCanvas');
-    ctx = canvas.getContext('2d');
+    if (!canvas) {
+        console.error('Canvas element not found');
+        return;
+    }
 
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
     resetGame();
 
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -137,56 +142,43 @@ function initGame() {
     requestAnimationFrame(gameLoop);
 }
 
-function resizeCanvas() {
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-
-    if (windowWidth / windowHeight > ASPECT_RATIO) {
-        HEIGHT = windowHeight * SCALE_FACTOR;
-        WIDTH = HEIGHT * ASPECT_RATIO;
-    } else {
-        WIDTH = windowWidth * SCALE_FACTOR;
-        HEIGHT = WIDTH / ASPECT_RATIO;
-    }
-
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
-
-    // Rescale existing balls if necessary
-    balls.forEach(ball => {
-        ball.x = (ball.x / canvas.width) * WIDTH;
-        ball.y = (ball.y / canvas.height) * HEIGHT;
-        ball.radius = (ball.radius / canvas.width) * WIDTH;
-        ball.dx = (ball.dx / canvas.width) * WIDTH;
-        ball.dy = (ball.dy / canvas.height) * HEIGHT;
-    });
-}
-
 function resetGame() {
     balls = Array.from({ length: 15 }, () => new Ball());
     collisionCount = 0;
 }
 
-function gameLoop() {
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+const FIXED_TIME_STEP = 1000 / 60; // 60 FPS
+let lastTime = 0;
 
-    balls.forEach((ball, i) => {
-        ball.move();
-        ball.draw(ctx);
-        for (let j = i + 1; j < balls.length; j++) {
-            if (ball.checkCollision(balls[j])) {
-                ball.resolveCollision(balls[j]);
-                collisionCount++;
+function gameLoop(currentTime) {
+    if (!gameRunning) {
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
+    if (currentTime - lastTime >= FIXED_TIME_STEP) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        balls.forEach((ball, i) => {
+            ball.move();
+            ball.draw();
+            for (let j = i + 1; j < balls.length; j++) {
+                if (ball.checkCollision(balls[j])) {
+                    ball.resolveCollision(balls[j]);
+                    collisionCount++;
+                }
             }
-        }
-    });
+        });
 
-    // Display collision counter
-    ctx.fillStyle = 'black';
-    ctx.font = `${HEIGHT * 0.05}px Arial`;
-    const counterText = `${collisionCount} bonks`;
-    const textWidth = ctx.measureText(counterText).width;
-    ctx.fillText(counterText, WIDTH - textWidth - WIDTH * 0.01, HEIGHT * 0.05);
+        // Display collision counter
+        ctx.fillStyle = 'black';
+        ctx.font = `${Math.min(canvas.height * 0.05, 24)}px Arial`;
+        const counterText = `${collisionCount} bonks`;
+        const textWidth = ctx.measureText(counterText).width;
+        ctx.fillText(counterText, canvas.width - textWidth - 10, Math.min(canvas.height * 0.05, 24));
+
+        lastTime = currentTime;
+    }
 
     requestAnimationFrame(gameLoop);
 }
@@ -200,8 +192,8 @@ function handleMouseDown(event) {
 
     const rect = canvas.getBoundingClientRect();
     const mousePos = {
-        x: (event.clientX - rect.left) * (WIDTH / rect.width),
-        y: (event.clientY - rect.top) * (HEIGHT / rect.height)
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
     };
 
     for (const ball of balls) {
@@ -218,8 +210,8 @@ function handleMouseUp(event) {
     if (grabbedBall) {
         const rect = canvas.getBoundingClientRect();
         const mousePos = {
-            x: (event.clientX - rect.left) * (WIDTH / rect.width),
-            y: (event.clientY - rect.top) * (HEIGHT / rect.height)
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
         };
 
         grabbedBall.dx = (mousePos.x - mouseStartPos.x) / 10;
@@ -232,8 +224,8 @@ function handleMouseUp(event) {
 function handleMouseMove(event) {
     if (grabbedBall) {
         const rect = canvas.getBoundingClientRect();
-        grabbedBall.x = (event.clientX - rect.left) * (WIDTH / rect.width);
-        grabbedBall.y = (event.clientY - rect.top) * (HEIGHT / rect.height);
+        grabbedBall.x = event.clientX - rect.left;
+        grabbedBall.y = event.clientY - rect.top;
     }
 }
 
@@ -242,4 +234,3 @@ window.onload = initGame;
 
 // Show splash screen on page load
 window.addEventListener('load', showSplashScreen);
-
