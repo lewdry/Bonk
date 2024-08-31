@@ -1,7 +1,7 @@
 // Constants
-const WIDTH = 965;
-const HEIGHT = 580;
-const BALL_COUNT = 15;
+const ASPECT_RATIO = 965 / 580;
+const SCALE_FACTOR = 0.7; // 70% of the visible area
+let WIDTH, HEIGHT;
 
 // Ball class
 class Ball {
@@ -10,12 +10,12 @@ class Ball {
     }
 
     reset() {
-        this.radius = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
+        this.radius = Math.floor(Math.random() * (WIDTH * 0.03 - WIDTH * 0.01 + 1)) + WIDTH * 0.01;
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (WIDTH - 2 * this.radius) + this.radius;
         this.y = Math.random() * (HEIGHT - 2 * this.radius) + this.radius;
-        this.dx = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1);
-        this.dy = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1);
+        this.dx = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1) * (WIDTH / 965);
+        this.dy = (Math.random() < 0.5 ? -1 : 1) * (Math.random() + 1) * (HEIGHT / 580);
         this.color = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
         this.grabbed = false;
     }
@@ -93,6 +93,9 @@ function initGame() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
 
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
     resetGame();
 
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -102,8 +105,33 @@ function initGame() {
     requestAnimationFrame(gameLoop);
 }
 
+function resizeCanvas() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    if (windowWidth / windowHeight > ASPECT_RATIO) {
+        HEIGHT = windowHeight * SCALE_FACTOR;
+        WIDTH = HEIGHT * ASPECT_RATIO;
+    } else {
+        WIDTH = windowWidth * SCALE_FACTOR;
+        HEIGHT = WIDTH / ASPECT_RATIO;
+    }
+
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+
+    // Rescale existing balls if necessary
+    balls.forEach(ball => {
+        ball.x = (ball.x / canvas.width) * WIDTH;
+        ball.y = (ball.y / canvas.height) * HEIGHT;
+        ball.radius = (ball.radius / canvas.width) * WIDTH;
+        ball.dx = (ball.dx / canvas.width) * WIDTH;
+        ball.dy = (ball.dy / canvas.height) * HEIGHT;
+    });
+}
+
 function resetGame() {
-    balls = Array.from({ length: BALL_COUNT }, () => new Ball());
+    balls = Array.from({ length: 1 }, () => new Ball());
     collisionCount = 0;
 }
 
@@ -123,10 +151,10 @@ function gameLoop() {
 
     // Display collision counter
     ctx.fillStyle = 'black';
-    ctx.font = '30px Arial';
+    ctx.font = `${HEIGHT * 0.05}px Arial`;
     const counterText = `Collisions: ${collisionCount}`;
     const textWidth = ctx.measureText(counterText).width;
-    ctx.fillText(counterText, WIDTH - textWidth - 10, 30);
+    ctx.fillText(counterText, WIDTH - textWidth - WIDTH * 0.01, HEIGHT * 0.05);
 
     requestAnimationFrame(gameLoop);
 }
@@ -140,8 +168,8 @@ function handleMouseDown(event) {
 
     const rect = canvas.getBoundingClientRect();
     const mousePos = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
+        x: (event.clientX - rect.left) * (WIDTH / rect.width),
+        y: (event.clientY - rect.top) * (HEIGHT / rect.height)
     };
 
     for (const ball of balls) {
@@ -158,8 +186,8 @@ function handleMouseUp(event) {
     if (grabbedBall) {
         const rect = canvas.getBoundingClientRect();
         const mousePos = {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
+            x: (event.clientX - rect.left) * (WIDTH / rect.width),
+            y: (event.clientY - rect.top) * (HEIGHT / rect.height)
         };
 
         grabbedBall.dx = (mousePos.x - mouseStartPos.x) / 10;
@@ -172,8 +200,8 @@ function handleMouseUp(event) {
 function handleMouseMove(event) {
     if (grabbedBall) {
         const rect = canvas.getBoundingClientRect();
-        grabbedBall.x = event.clientX - rect.left;
-        grabbedBall.y = event.clientY - rect.top;
+        grabbedBall.x = (event.clientX - rect.left) * (WIDTH / rect.width);
+        grabbedBall.y = (event.clientY - rect.top) * (HEIGHT / rect.height);
     }
 }
 
