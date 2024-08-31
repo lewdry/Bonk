@@ -103,24 +103,28 @@ function startCountdown() {
     const countdownElement = document.getElementById('countdown');
     let countdown = 5; // Start from 5 seconds
 
-    countdownElement.textContent = `starting in ${countdown}...`;
-
-    const interval = setInterval(() => {
-        countdown--;
+    function updateCountdown() {
         if (countdown > 0) {
-            countdownElement.textContent = `starting in ${countdown}...`;
+            countdownElement.textContent = `Game starting in ${countdown}...`;
+            countdown--;
+            setTimeout(updateCountdown, 1000);
         } else {
-            countdownElement.textContent = ''; // Clear countdown text
-            clearInterval(interval); // Stop countdown
-            gameRunning = true;
+            countdownElement.textContent = 'Go!';
+            setTimeout(() => {
+                document.getElementById('splashScreen').style.display = 'none';
+                gameRunning = true;
+            }, 1000);
         }
-    }, 1000);
-}
+    }
 
+    updateCountdown();
+}
 // Show splash screen and hide after 5 seconds
 function showSplashScreen() {
+    const splashScreen = document.getElementById('splashScreen');
     splashScreen.style.display = 'flex';
     startCountdown();
+}
     setTimeout(() => {
         splashScreen.style.display = 'none';
     }, 5000);
@@ -146,6 +150,7 @@ function initGame() {
     canvas.addEventListener('touchstart', handleDoubleTap, false);
     canvas.addEventListener('dblclick', handleDoubleTap, false);
 
+    showSplashScreen(); // Call this to show the splash screen
     requestAnimationFrame(gameLoop);
 }
 
@@ -247,6 +252,3 @@ function handleDoubleTap(event) {
 
 // Initialize the game when the page loads
 window.onload = initGame;
-
-// Show splash screen on page load
-window.addEventListener('load', showSplashScreen);
