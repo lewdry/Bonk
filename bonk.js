@@ -19,7 +19,7 @@ class Ball {
     }
 
     reset() {
-        this.radius = Math.random() * 20 + 10; // Random size between 10 and 30
+        this.radius = Math.random() * 40 + 10; // Random size between 10 and 50
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (canvas.width - 2 * this.radius) + this.radius;
         this.y = Math.random() * (canvas.height - 2 * this.radius) + this.radius;
@@ -184,10 +184,10 @@ function gameLoop(currentTime) {
 
         // Display collision counter
         ctx.fillStyle = 'black';
-        ctx.font = `${Math.min(canvas.height * 0.05, 24)}px Arial`;
+        ctx.font = `${Math.min(canvas.height * 0.05, 14)}px`;
         const counterText = `${collisionCount} bonks`;
         const textWidth = ctx.measureText(counterText).width;
-        ctx.fillText(counterText, canvas.width - textWidth - 10, Math.min(canvas.height * 0.05, 24));
+        ctx.fillText(counterText, canvas.width - textWidth - 10, Math.min(canvas.height * 0.05, 14));
 
         lastTime = currentTime;
     }
