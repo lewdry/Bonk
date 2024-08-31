@@ -1,6 +1,6 @@
 // Constants
 const ASPECT_RATIO = 1 / 1;
-const SCALE_FACTOR = 0.7; // 70% of the visible area
+const SCALE_FACTOR = 0.9; // 90% of the visible area
 let WIDTH, HEIGHT;
 
 // Ball class
@@ -121,12 +121,12 @@ function resizeCanvas() {
     canvas.height = HEIGHT;
 
     // Rescale existing balls if necessary
-    balls.forEach(ball => {
-        ball.x = (ball.x / canvas.width) * WIDTH;
-        ball.y = (ball.y / canvas.height) * HEIGHT;
-        ball.radius = (ball.radius / canvas.width) * WIDTH;
-        ball.dx = (ball.dx / canvas.width) * WIDTH;
-        ball.dy = (ball.dy / canvas.height) * HEIGHT;
+ //   balls.forEach(ball => {
+ //       ball.x = (ball.x / canvas.width) * WIDTH;
+ //       ball.y = (ball.y / canvas.height) * HEIGHT;
+ //       ball.radius = (ball.radius / canvas.width) * WIDTH;
+  //      ball.dx = (ball.dx / canvas.width) * WIDTH;
+  //      ball.dy = (ball.dy / canvas.height) * HEIGHT;
     });
 }
 
