@@ -1,7 +1,7 @@
 // Constants
 const WIDTH = 965;
 const HEIGHT = 580;
-const BALL_COUNT = 1;
+const BALL_COUNT = 15;
 
 // Ball class
 class Ball {
