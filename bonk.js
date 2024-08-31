@@ -2,6 +2,8 @@
 const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 const splashScreen = document.getElementById('splashScreen');
+let lastCursorPosition = null;
+let lastCursorTime = 0;
 
 // Set canvas size to match window
 function resizeCanvas() {
@@ -217,22 +219,41 @@ function handleStart(event) {
 
 function handleMove(event) {
     event.preventDefault();
+    const currentTime = Date.now();
+    const pos = getEventPos(event);
+    
     if (grabbedBall) {
-        const pos = getEventPos(event);
         grabbedBall.x = pos.x;
         grabbedBall.y = pos.y;
     }
+    
+    lastCursorPosition = pos;
+    lastCursorTime = currentTime;
 }
 
 function handleEnd(event) {
     event.preventDefault();
     if (grabbedBall) {
+        const currentTime = Date.now();
         const pos = getEventPos(event);
-        grabbedBall.dx = (pos.x - interactionStartPos.x) / 10;
-        grabbedBall.dy = (pos.y - interactionStartPos.y) / 10;
+        const timeDelta = (currentTime - lastCursorTime) / 1000; // Convert to seconds
+
+        if (timeDelta > 0) {
+            const velocityX = (pos.x - lastCursorPosition.x) / timeDelta;
+            const velocityY = (pos.y - lastCursorPosition.y) / timeDelta;
+
+            // Apply a scaling factor to adjust the ball's velocity
+            const velocityScale = 0.3; // Adjust this value to change the "throw" strength
+            grabbedBall.dx = velocityX * velocityScale;
+            grabbedBall.dy = velocityY * velocityScale;
+        }
+
         grabbedBall.grabbed = false;
         grabbedBall = null;
     }
+    
+    lastCursorPosition = null;
+    lastCursorTime = 0;
 }
 
 function handleDoubleTap(event) {
