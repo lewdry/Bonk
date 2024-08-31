@@ -205,12 +205,15 @@ function getEventPos(event) {
 
 function handleStart(event) {
     event.preventDefault();
+    const currentTime = Date.now();
     const pos = getEventPos(event);
-    interactionStartPos = pos;
 
-    // Initialize lastCursorTime to the current time when an interaction starts
-    lastCursorTime = Date.now();
+    if (currentTime - lastInteractionTime < 300) {
+        handleDoubleTap(event);
+    }
+    lastInteractionTime = currentTime;
 
+    // Handle touch start for grabbing
     for (const ball of balls) {
         if (ball.checkGrabbed(pos)) {
             grabbedBall = ball;
@@ -246,7 +249,7 @@ function handleEnd(event) {
             const velocityY = (pos.y - lastCursorPosition.y) / timeDelta;
 
             // Apply a scaling factor to adjust the ball's velocity
-            const velocityScale = 0.3; // Adjust this value to change the "throw" strength
+            const velocityScale = 1; // Adjust this value to change the "throw" strength
             grabbedBall.dx = velocityX * velocityScale;
             grabbedBall.dy = velocityY * velocityScale;
         }
@@ -264,7 +267,7 @@ function handleDoubleTap(event) {
     const currentTime = Date.now();
 
     if (currentTime - lastInteractionTime < 300) {
-        // This is considered a double tap
+        // This is considered a double tap or double-click
         resetGame();
     }
     lastInteractionTime = currentTime;
