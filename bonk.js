@@ -2,8 +2,6 @@
 const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 const splashScreen = document.getElementById('splashScreen');
-let lastCursorPosition = null;
-let lastCursorTime = 0;
 
 // Set canvas size to match window
 function resizeCanvas() {
@@ -263,3 +261,6 @@ window.onload = initGame;
 
 // Show splash screen on page load
 window.addEventListener('load', showSplashScreen);
+
+// Add this new event listener for double-click on desktop
+canvas.addEventListener('dblclick', handleDoubleTap, false);
