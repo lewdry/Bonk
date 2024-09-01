@@ -222,9 +222,8 @@ function gameLoop(currentTime) {
         
         // Stopped time counter
         if (stoppedFor > 0) {
-            const stoppedText = `wow, stopped for ${stoppedFor}s`;
-            const stoppedTextWidth = ctx.measureText(stoppedText).width;
-            ctx.fillText(stoppedText, canvas.width - stoppedTextWidth - 10, 36);
+            const stoppedText = `wow! stopped for ${stoppedFor}s`;
+            ctx.fillText(stoppedText, 10, 16);
         }
 
         lastTime = currentTime;
