@@ -95,7 +95,7 @@ let balls = [];
 let collisionCount = 0;
 let grabbedBall = null;
 let interactionStartPos = null;
-let lastInteractionTime = 0;
+let lastCursorTime = 0;
 let gameRunning = false;
 
 // Update the countdown every second
@@ -135,18 +135,14 @@ function initGame() {
     window.addEventListener('resize', resizeCanvas);
     resetGame();
 
-    // Add event listeners for both mouse and touch events
-    canvas.addEventListener('touchstart', handleStart, false);
-    canvas.addEventListener('mousedown', handleStart, false);
-    canvas.addEventListener('touchmove', handleMove, false);
-    canvas.addEventListener('mousemove', handleMove, false);
-    canvas.addEventListener('touchend', handleEnd, false);
-    canvas.addEventListener('mouseup', handleEnd, false);
-    canvas.addEventListener('touchcancel', handleEnd, false);
-    canvas.addEventListener('touchstart', handleDoubleTap, false);
-    canvas.addEventListener('dblclick', handleDoubleTap, false);
+    // Unified event listeners for both mouse and touch events
+    canvas.addEventListener('pointerdown', handleStart, false);
+    canvas.addEventListener('pointermove', handleMove, false);
+    canvas.addEventListener('pointerup', handleEnd, false);
+    canvas.addEventListener('pointercancel', handleEnd, false);
+    canvas.addEventListener('dblclick', handleDoubleTap, false); // Desktop double-click
 
-    showSplashScreen(); // Call this to show the splash screen
+    showSplashScreen();
     requestAnimationFrame(gameLoop);
 }
 
@@ -158,12 +154,13 @@ function resetGame() {
 const FIXED_TIME_STEP = 1000 / 60; // 60 FPS
 let lastTime = 0;
 
+// Gravity handling via device orientation
 window.addEventListener('deviceorientation', function(event) {
     let gravityX = event.gamma / 90; // gamma is the left-to-right tilt in degrees
     let gravityY = event.beta / 90;  // beta is the front-to-back tilt in degrees
 
     balls.forEach(ball => {
-        ball.dx += gravityX * 0.1; // Adjust these factors to control the strength of the gravity effect
+        ball.dx += gravityX * 0.1;
         ball.dy += gravityY * 0.1;
     });
 });
@@ -203,11 +200,9 @@ function gameLoop(currentTime) {
 
 function getEventPos(event) {
     const rect = canvas.getBoundingClientRect();
-    const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-    const clientY = event.clientY || (event.touches && event.touches[0].clientY);
     return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
     };
 }
 
@@ -216,8 +211,8 @@ function handleStart(event) {
     const currentTime = Date.now();
     const pos = getEventPos(event);
     interactionStartPos = pos;
+    lastCursorTime = currentTime;
 
-    // Handle touch start for grabbing
     for (const ball of balls) {
         if (ball.checkGrabbed(pos)) {
             grabbedBall = ball;
@@ -230,7 +225,7 @@ function handleStart(event) {
 function handleMove(event) {
     event.preventDefault();
     const pos = getEventPos(event);
-    
+
     if (grabbedBall) {
         grabbedBall.x = pos.x;
         grabbedBall.y = pos.y;
@@ -242,40 +237,25 @@ function handleEnd(event) {
     if (grabbedBall) {
         const pos = getEventPos(event);
 
-        // Calculate the time delta to determine the velocity
-        const currentTime = Date.now();
-        const timeDelta = (currentTime - lastInteractionTime) / 1000; // Time in seconds
+        // Calculate velocity based on position and time
+        const timeDelta = (Date.now() - lastCursorTime) / 1000;
+        grabbedBall.dx = (pos.x - interactionStartPos.x) / timeDelta;
+        grabbedBall.dy = (pos.y - interactionStartPos.y) / timeDelta;
 
-        // Calculate the velocity based on the distance moved and the time taken
-        if (timeDelta > 0) {
-            grabbedBall.dx = (pos.x - interactionStartPos.x) / timeDelta;
-            grabbedBall.dy = (pos.y - interactionStartPos.y) / timeDelta;
-        }
-
-        // Release the ball
         grabbedBall.grabbed = false;
         grabbedBall = null;
-        lastInteractionTime = currentTime; // Update last interaction time
     }
 }
-
 
 function handleDoubleTap(event) {
     event.preventDefault();
     const currentTime = Date.now();
 
-    if (currentTime - lastInteractionTime < 300) {
-        // This is considered a double tap or double-click
+    if (currentTime - lastCursorTime < 300) {
         resetGame();
     }
-    lastInteractionTime = currentTime;
+    lastCursorTime = currentTime;
 }
 
-// Initialize the game when the page loads
+// Initialize the game
 window.onload = initGame;
-
-// Show splash screen on page load
-window.addEventListener('load', showSplashScreen);
-
-// Add this new event listener for double-click on desktop
-canvas.addEventListener('dblclick', handleDoubleTap, false);
