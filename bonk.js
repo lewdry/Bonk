@@ -133,7 +133,7 @@ function initGame() {
     resetGame();
 
     canvas.addEventListener('pointerdown', handleStart, false);
-    canvas.addEventListener('touchstart', handleStart, false);
+    // don't use this for now - canvas.addEventListener('touchstart', handleStart, false);
     canvas.addEventListener('pointermove', handleMove, false);
     canvas.addEventListener('pointerup', handleEnd, false);
     canvas.addEventListener('pointercancel', handleEnd, false);
