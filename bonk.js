@@ -237,11 +237,15 @@ function handleEnd(event) {
     if (grabbedBall) {
         const pos = getEventPos(event);
 
-        // Calculate velocity based on position and time
+        // Calculate the velocity based on the distance moved and time taken
         const timeDelta = (Date.now() - lastCursorTime) / 1000;
-        grabbedBall.dx = (pos.x - interactionStartPos.x) / timeDelta;
-        grabbedBall.dy = (pos.y - interactionStartPos.y) / timeDelta;
 
+        // Prevent extremely high velocities by clamping them
+        const maxVelocity = 15;
+        grabbedBall.dx = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.x - interactionStartPos.x) / (timeDelta * 10)));
+        grabbedBall.dy = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.y - interactionStartPos.y) / (timeDelta * 10)));
+
+        // Release the ball
         grabbedBall.grabbed = false;
         grabbedBall = null;
     }
