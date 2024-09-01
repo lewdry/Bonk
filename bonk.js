@@ -19,7 +19,7 @@ class Ball {
     }
 
     reset() {
-        this.radius = Math.random() * 20 + 10; // Random size between 10 and 30
+        this.radius = Math.random() * 20 + 10;
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (canvas.width - 2 * this.radius) + this.radius;
         this.y = Math.random() * (canvas.height - 2 * this.radius) + this.radius;
@@ -31,15 +31,53 @@ class Ball {
 
     move() {
         if (!this.grabbed) {
+            // Store previous position for CCD
+            this.prevX = this.x;
+            this.prevY = this.y;
+
+            // Update position
             this.x += this.dx;
             this.y += this.dy;
 
-            if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
-                this.dx = -this.dx;
-            }
-            if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
-                this.dy = -this.dy;
-            }
+            // Check and resolve boundary collisions
+            this.resolveBoundaryCollision();
+        }
+    }
+
+    resolveBoundaryCollision() {
+        const margin = 1; // 1px safety margin
+        let collided = false;
+
+        // Right boundary
+        if (this.x + this.radius >= canvas.width - margin) {
+            this.x = canvas.width - this.radius - margin;
+            this.dx = -Math.abs(this.dx);
+            collided = true;
+        }
+        // Left boundary
+        else if (this.x - this.radius <= margin) {
+            this.x = this.radius + margin;
+            this.dx = Math.abs(this.dx);
+            collided = true;
+        }
+
+        // Bottom boundary
+        if (this.y + this.radius >= canvas.height - margin) {
+            this.y = canvas.height - this.radius - margin;
+            this.dy = -Math.abs(this.dy);
+            collided = true;
+        }
+        // Top boundary
+        else if (this.y - this.radius <= margin) {
+            this.y = this.radius + margin;
+            this.dy = Math.abs(this.dy);
+            collided = true;
+        }
+
+        // If a collision occurred, slightly reduce velocity to prevent continuous bouncing
+        if (collided) {
+            this.dx *= 0.99;
+            this.dy *= 0.99;
         }
     }
 
@@ -153,17 +191,6 @@ function resetGame() {
 
 const FIXED_TIME_STEP = 1000 / 60; // 60 FPS
 let lastTime = 0;
-
-// Gravity handling via device orientation
-window.addEventListener('deviceorientation', function(event) {
-    let gravityX = event.gamma / 90; // gamma is the left-to-right tilt in degrees
-    let gravityY = event.beta / 90;  // beta is the front-to-back tilt in degrees
-
-    balls.forEach(ball => {
-        ball.dx += gravityX * 0.1;
-        ball.dy += gravityY * 0.1;
-    });
-});
 
 function gameLoop(currentTime) {
     if (!gameRunning) {
