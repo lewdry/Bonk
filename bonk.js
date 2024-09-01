@@ -165,7 +165,6 @@ function separateOverlappingBalls() {
 
 function showSplashScreen() {
     splashScreen.style.display = 'flex';
-    splashScreen.textContent = 'Tap or click to start';
 }
 
 const FIXED_TIME_STEP = 1000 / 60;
