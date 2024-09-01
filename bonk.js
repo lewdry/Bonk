@@ -122,6 +122,10 @@ let grabbedBall = null;
 let interactionStartPos = null;
 let lastCursorTime = 0;
 let gameRunning = false;
+let stoppedTime = 0;
+let stoppedFor = 0;
+let allBallsStopped = false;
+let lastStopTime = 0;
 
 function initGame() {
     if (!canvas) {
@@ -133,7 +137,6 @@ function initGame() {
     resetGame();
 
     canvas.addEventListener('pointerdown', handleStart, false);
-    // don't use this for now - canvas.addEventListener('touchstart', handleStart, false);
     canvas.addEventListener('pointermove', handleMove, false);
     canvas.addEventListener('pointerup', handleEnd, false);
     canvas.addEventListener('pointercancel', handleEnd, false);
@@ -147,6 +150,9 @@ function resetGame() {
     balls = Array.from({ length: 15 }, () => new Ball());
     separateOverlappingBalls();
     collisionCount = 0;
+    stoppedTime = 0;
+    stoppedFor = 0;
+    allBallsStopped = false;
 }
 
 function separateOverlappingBalls() {
@@ -180,6 +186,7 @@ function gameLoop(currentTime) {
     if (currentTime - lastTime >= FIXED_TIME_STEP) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        let allStopped = true;
         balls.forEach((ball, i) => {
             ball.move();
             ball.draw();
@@ -189,13 +196,36 @@ function gameLoop(currentTime) {
                     collisionCount++;
                 }
             }
+            if (ball.dx !== 0 || ball.dy !== 0) {
+                allStopped = false;
+            }
         });
+
+        if (allStopped) {
+            if (!allBallsStopped) {
+                allBallsStopped = true;
+                lastStopTime = currentTime;
+            } else {
+                stoppedFor = Math.floor((currentTime - lastStopTime) / 1000);
+            }
+        } else {
+            allBallsStopped = false;
+        }
 
         ctx.fillStyle = 'black';
         ctx.font = '16px Serif';
+        
+        // Collision counter
         const counterText = `${collisionCount} bonks`;
         const textWidth = ctx.measureText(counterText).width;
         ctx.fillText(counterText, canvas.width - textWidth - 10, 16);
+        
+        // Stopped time counter
+        if (stoppedFor > 0) {
+            const stoppedText = `wow, stopped for ${stoppedFor}s`;
+            const stoppedTextWidth = ctx.measureText(stoppedText).width;
+            ctx.fillText(stoppedText, canvas.width - stoppedTextWidth - 10, 36);
+        }
 
         lastTime = currentTime;
     }
