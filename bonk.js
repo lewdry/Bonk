@@ -158,6 +158,16 @@ function resetGame() {
 const FIXED_TIME_STEP = 1000 / 60; // 60 FPS
 let lastTime = 0;
 
+window.addEventListener('deviceorientation', function(event) {
+    let gravityX = event.gamma / 90; // gamma is the left-to-right tilt in degrees
+    let gravityY = event.beta / 90;  // beta is the front-to-back tilt in degrees
+
+    balls.forEach(ball => {
+        ball.dx += gravityX * 0.1; // Adjust these factors to control the strength of the gravity effect
+        ball.dy += gravityY * 0.1;
+    });
+});
+
 function gameLoop(currentTime) {
     if (!gameRunning) {
         requestAnimationFrame(gameLoop);
