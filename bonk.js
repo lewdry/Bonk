@@ -31,53 +31,27 @@ class Ball {
 
     move() {
         if (!this.grabbed) {
-            // Store previous position for CCD
-            this.prevX = this.x;
-            this.prevY = this.y;
-
-            // Update position
             this.x += this.dx;
             this.y += this.dy;
-
-            // Check and resolve boundary collisions
             this.resolveBoundaryCollision();
         }
     }
 
     resolveBoundaryCollision() {
-        const margin = 1; // 1px safety margin
-        let collided = false;
-
-        // Right boundary
-        if (this.x + this.radius >= canvas.width - margin) {
-            this.x = canvas.width - this.radius - margin;
-            this.dx = -Math.abs(this.dx);
-            collided = true;
-        }
-        // Left boundary
-        else if (this.x - this.radius <= margin) {
+        const margin = 1;
+        if (this.x - this.radius <= margin) {
             this.x = this.radius + margin;
             this.dx = Math.abs(this.dx);
-            collided = true;
+        } else if (this.x + this.radius >= canvas.width - margin) {
+            this.x = canvas.width - this.radius - margin;
+            this.dx = -Math.abs(this.dx);
         }
-
-        // Bottom boundary
-        if (this.y + this.radius >= canvas.height - margin) {
-            this.y = canvas.height - this.radius - margin;
-            this.dy = -Math.abs(this.dy);
-            collided = true;
-        }
-        // Top boundary
-        else if (this.y - this.radius <= margin) {
+        if (this.y - this.radius <= margin) {
             this.y = this.radius + margin;
             this.dy = Math.abs(this.dy);
-            collided = true;
-        }
-
-        // If a collision occurred, slightly reduce velocity to prevent continuous bouncing
-        if (collided) {
-            this.dx *= 0.99;
-            this.dy *= 0.99;
+        } else if (this.y + this.radius >= canvas.height - margin) {
+            this.y = canvas.height - this.radius - margin;
+            this.dy = -Math.abs(this.dy);
         }
     }
 
@@ -90,36 +64,49 @@ class Ball {
     }
 
     checkCollision(other) {
-        const distance = Math.hypot(this.x - other.x, this.y - other.y);
+        const dx = this.x - other.x;
+        const dy = this.y - other.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
         return distance < this.radius + other.radius;
     }
 
     resolveCollision(other) {
-        if (this.checkCollision(other)) {
-            const normalX = other.x - this.x;
-            const normalY = other.y - this.y;
-            const normalLength = Math.hypot(normalX, normalY);
-            const unitNormalX = normalX / normalLength;
-            const unitNormalY = normalY / normalLength;
+        const dx = other.x - this.x;
+        const dy = other.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const overlap = this.radius + other.radius - distance;
+        
+        if (overlap > 0) {
+            // Move balls apart
+            const angle = Math.atan2(dy, dx);
+            const moveX = overlap * Math.cos(angle) / 2;
+            const moveY = overlap * Math.sin(angle) / 2;
+            
+            this.x -= moveX;
+            this.y -= moveY;
+            other.x += moveX;
+            other.y += moveY;
 
-            const relVelX = other.dx - this.dx;
-            const relVelY = other.dy - this.dy;
-            const velAlongNormal = relVelX * unitNormalX + relVelY * unitNormalY;
+            // Calculate new velocities
+            const normalX = dx / distance;
+            const normalY = dy / distance;
+            const tangentX = -normalY;
+            const tangentY = normalX;
 
-            if (velAlongNormal > -0.01) return; // Small threshold to prevent sticking
+            const dotProductThis = this.dx * normalX + this.dy * normalY;
+            const dotProductOther = other.dx * normalX + other.dy * normalY;
 
-            const restitution = 1;
-            let impulse = -(1 + restitution) * velAlongNormal;
-            impulse /= 1 / this.mass + 1 / other.mass;
+            const v1n = (dotProductThis * (this.mass - other.mass) + 2 * other.mass * dotProductOther) / (this.mass + other.mass);
+            const v2n = (dotProductOther * (other.mass - this.mass) + 2 * this.mass * dotProductThis) / (this.mass + other.mass);
 
-            const impulseX = impulse * unitNormalX;
-            const impulseY = impulse * unitNormalY;
+            this.dx = v1n * normalX + (this.dx * tangentX + this.dy * tangentY) * tangentX;
+            this.dy = v1n * normalY + (this.dx * tangentX + this.dy * tangentY) * tangentY;
+            other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
+            other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
 
-            this.dx -= impulseX / this.mass;
-            this.dy -= impulseY / this.mass;
-            other.dx += impulseX / other.mass;
-            other.dy += impulseY / other.mass;
+            return true; // Collision occurred
         }
+        return false; // No collision
     }
 
     checkGrabbed(pos) {
@@ -136,34 +123,6 @@ let interactionStartPos = null;
 let lastCursorTime = 0;
 let gameRunning = false;
 
-// Update the countdown every second
-function startCountdown() {
-    const countdownElement = document.getElementById('countdown');
-    let countdown = 5; // Start from 5 seconds
-
-    countdownElement.textContent = `starting in ${countdown}...`;
-
-    const interval = setInterval(() => {
-        countdown--;
-        if (countdown > 0) {
-            countdownElement.textContent = `starting in ${countdown}...`;
-        } else {
-            countdownElement.textContent = ''; // Clear countdown text
-            clearInterval(interval); // Stop countdown
-            gameRunning = true;
-        }
-    }, 1000);
-}
-
-// Show splash screen and hide after 5 seconds
-function showSplashScreen() {
-    splashScreen.style.display = 'flex';
-    startCountdown();
-    setTimeout(() => {
-        splashScreen.style.display = 'none';
-    }, 5000);
-}
-
 function initGame() {
     if (!canvas) {
         console.error('Canvas element not found');
@@ -173,12 +132,11 @@ function initGame() {
     window.addEventListener('resize', resizeCanvas);
     resetGame();
 
-    // Unified event listeners for both mouse and touch events
     canvas.addEventListener('pointerdown', handleStart, false);
     canvas.addEventListener('pointermove', handleMove, false);
     canvas.addEventListener('pointerup', handleEnd, false);
     canvas.addEventListener('pointercancel', handleEnd, false);
-    canvas.addEventListener('dblclick', handleDoubleTap, false); // Desktop double-click
+    canvas.addEventListener('dblclick', handleDoubleTap, false);
 
     showSplashScreen();
     requestAnimationFrame(gameLoop);
@@ -186,10 +144,31 @@ function initGame() {
 
 function resetGame() {
     balls = Array.from({ length: 15 }, () => new Ball());
+    separateOverlappingBalls();
     collisionCount = 0;
 }
 
-const FIXED_TIME_STEP = 1000 / 60; // 60 FPS
+function separateOverlappingBalls() {
+    const iterations = 10;
+    for (let i = 0; i < iterations; i++) {
+        let overlapsFound = false;
+        for (let j = 0; j < balls.length; j++) {
+            for (let k = j + 1; k < balls.length; k++) {
+                if (balls[j].resolveCollision(balls[k])) {
+                    overlapsFound = true;
+                }
+            }
+        }
+        if (!overlapsFound) break;
+    }
+}
+
+function showSplashScreen() {
+    splashScreen.style.display = 'flex';
+    splashScreen.textContent = 'Tap or click to start';
+}
+
+const FIXED_TIME_STEP = 1000 / 60;
 let lastTime = 0;
 
 function gameLoop(currentTime) {
@@ -212,7 +191,6 @@ function gameLoop(currentTime) {
             }
         });
 
-        // Display collision counter
         ctx.fillStyle = 'black';
         ctx.font = '16px Serif';
         const counterText = `${collisionCount} bonks`;
@@ -240,6 +218,12 @@ function handleStart(event) {
     interactionStartPos = pos;
     lastCursorTime = currentTime;
 
+    if (!gameRunning) {
+        splashScreen.style.display = 'none';
+        gameRunning = true;
+        return;
+    }
+
     for (const ball of balls) {
         if (ball.checkGrabbed(pos)) {
             grabbedBall = ball;
@@ -263,16 +247,10 @@ function handleEnd(event) {
     event.preventDefault();
     if (grabbedBall) {
         const pos = getEventPos(event);
-
-        // Calculate the velocity based on the distance moved and time taken
         const timeDelta = (Date.now() - lastCursorTime) / 1000;
-
-        // Prevent extremely high velocities by clamping them
         const maxVelocity = 15;
         grabbedBall.dx = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.x - interactionStartPos.x) / (timeDelta * 10)));
         grabbedBall.dy = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.y - interactionStartPos.y) / (timeDelta * 10)));
-
-        // Release the ball
         grabbedBall.grabbed = false;
         grabbedBall = null;
     }
@@ -281,12 +259,10 @@ function handleEnd(event) {
 function handleDoubleTap(event) {
     event.preventDefault();
     const currentTime = Date.now();
-
     if (currentTime - lastCursorTime < 300) {
         resetGame();
     }
     lastCursorTime = currentTime;
 }
 
-// Initialize the game
 window.onload = initGame;
