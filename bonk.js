@@ -207,9 +207,6 @@ function handleStart(event) {
     const pos = getEventPos(event);
     interactionStartPos = pos;
 
- // Initialize lastCursorTime to the current time when an interaction starts
-    lastCursorTime = Date.now();
-    
     // Handle touch start for grabbing
     for (const ball of balls) {
         if (ball.checkGrabbed(pos)) {
@@ -222,24 +219,24 @@ function handleStart(event) {
 
 function handleMove(event) {
     event.preventDefault();
-    const currentTime = Date.now();
     const pos = getEventPos(event);
     
     if (grabbedBall) {
         grabbedBall.x = pos.x;
         grabbedBall.y = pos.y;
     }
-    
-    lastCursorPosition = pos;
-    lastCursorTime = currentTime;
 }
 
 function handleEnd(event) {
     event.preventDefault();
     if (grabbedBall) {
         const pos = getEventPos(event);
-        grabbedBall.dx = (pos.x - interactionStartPos.x) / 10;
-        grabbedBall.dy = (pos.y - interactionStartPos.y) / 10;
+
+        // Calculate the velocity based on the distance moved and time taken
+        const timeDelta = (Date.now() - lastCursorTime) / 1000;
+        grabbedBall.dx = (pos.x - interactionStartPos.x) / (timeDelta * 10);
+        grabbedBall.dy = (pos.y - interactionStartPos.y) / (timeDelta * 10);
+
         grabbedBall.grabbed = false;
         grabbedBall = null;
     }
