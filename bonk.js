@@ -242,15 +242,23 @@ function handleEnd(event) {
     if (grabbedBall) {
         const pos = getEventPos(event);
 
-        // Calculate the velocity based on the distance moved and time taken
-        const timeDelta = (Date.now() - lastCursorTime) / 1000;
-        grabbedBall.dx = (pos.x - interactionStartPos.x) / (timeDelta * 10);
-        grabbedBall.dy = (pos.y - interactionStartPos.y) / (timeDelta * 10);
+        // Calculate the time delta to determine the velocity
+        const currentTime = Date.now();
+        const timeDelta = (currentTime - lastInteractionTime) / 1000; // Time in seconds
 
+        // Calculate the velocity based on the distance moved and the time taken
+        if (timeDelta > 0) {
+            grabbedBall.dx = (pos.x - interactionStartPos.x) / timeDelta;
+            grabbedBall.dy = (pos.y - interactionStartPos.y) / timeDelta;
+        }
+
+        // Release the ball
         grabbedBall.grabbed = false;
         grabbedBall = null;
+        lastInteractionTime = currentTime; // Update last interaction time
     }
 }
+
 
 function handleDoubleTap(event) {
     event.preventDefault();
