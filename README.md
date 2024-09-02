@@ -1,5 +1,5 @@
 # Bonk! 🟣➰🟢
-Bonk is a game of bouncing, bonking balls.
+Bonk is a game of colourful, bouncing, bonking balls.
 
 Grab a ball and throw it. Tap a ball to stop it. Double-tap anywhere to get a new set of balls.
 
