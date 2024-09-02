@@ -1,11 +1,9 @@
-# bonk!
-Bouncing bonking balls.
+# Bonk! 🟣➰🟢
+Bonk is a game of bouncing, bonking balls.
 
-A basic (yes very basic) game of bouncing.
+Grab a ball and throw it. Tap a ball to stop it. Double-tap anywhere to get a new set of balls.
 
-Tap a ball to stop it. Grab and throw it. Double click to reset the screen.
+Watch the bonk counter count ever upwards. Stop all the balls for a small surprise. 
 
-Watch the counter count. 
-
-Thrilling, that's bonk!
+Thrilling stuff. Hey, that's bonk!
 
