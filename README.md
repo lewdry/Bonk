@@ -16,10 +16,14 @@ Thrilling stuff. Hey, that's bonk!
 ## Philsophy
 Sometimes you just need to bounce some balls. No option to change number of balls or size or balls or anything like that. It's fun for a second, but what I've published here (15 balls, 10-30 pixels diameter) is the result of extensive market testing with a five and three year old. I will take no further questions on this.
 
+In a previous iteration of the game, I had a short beep.wav audio file play when there was a collision (or 'bonk'). Completely impractical. You'll see through play how fast the bonk counter climbs, the noise was near constant. I have removed audio for your sanity and mine.
+
+## Interesting Observation
+The ball colours are randomly chosen on reset, but I suspect there are far more green balls presented than any other colour. I don't know how to prove or disprove it, but see for yourself. It's a very rare game of Bonk which contains 0 green balls. 
+
 ## Technical Info
 * Built in plain old javascript.
 * Hosted freely on github pages.
-* The ball colours are randomly generated, but I suspect Bonk generates far more green than any other colour. I don't know how to prove or disprove that.
 
 Start bonking here: https://lewdry.github.io/bonk/
 
