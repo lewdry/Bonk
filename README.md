@@ -14,12 +14,18 @@ Thrilling stuff. Hey, that's bonk!
 * just generally quite soothing.
 
 ## Philsophy
-Sometimes you just need to bounce some balls. No option to change number of balls or size or balls or anything like that. It's fun for a second, but what I've published here (15 balls, 10-30 pixels diameter) is the result of extensive market testing with a five and three year old. I will take no further questions on this.
+Sometimes you just need to bounce some balls.
 
-In a previous iteration of the game, I had a short beep.wav audio file play when there was a collision (or 'bonk'). Completely impractical. You'll see through play how fast the bonk counter climbs, the noise was near constant. I have removed audio for your sanity and mine.
+A 'bonk' is defined as a ball to ball collision. Ball to wall collisions are not bonks.
+
+In Bonk, there is intentionally no option to change the number of balls or size or balls or anything at all. I've found that having options is fun for a second but gets old fast. What I've published (15 balls, 10-30 pixels diameter) is the result of extensive market testing with a five and three year old. 
+
+I will take no further questions on missing functionality.
+
+In a previous iteration of the game, I had a short audio file (beep.wav) play when there was a collision (or 'bonk') between two balls. Completely impractical. You'll observe how quickly bonks occur and the bonk counter climbs, the noise was near-constant. I have removed audio for your sanity and mine.
 
 ## Interesting Observation
-The ball colours are randomly chosen on reset, but I suspect there are far more green balls presented than any other colour. I don't know how to prove or disprove it, but see for yourself. It's a very rare game of Bonk which contains 0 green balls. 
+The ball colours are randomly chosen on reset, but I suspect there are far more green balls presented than any other colour. I don't know how to prove or disprove it, but see for yourself. It's a very rare game of Bonk which contains 0 green balls.
 
 ## Technical Info
 * Built in plain old javascript.
