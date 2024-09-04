@@ -25,7 +25,7 @@ class Ball {
         this.y = Math.random() * (canvas.height - 2 * this.radius) + this.radius;
         this.dx = (Math.random() - 0.5) * 5;
         this.dy = (Math.random() - 0.5) * 5;
-        this.color = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
+        this.colour = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
         this.grabbed = false;
     }
 
@@ -58,7 +58,7 @@ class Ball {
     draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.colour;
         ctx.fill();
         ctx.closePath();
     }
@@ -136,7 +136,7 @@ function initGame() {
     window.addEventListener('resize', resizeCanvas);
     resetGame();
 
-    canvas.addEventListener('pointerdown', handleStart, false);
+    document.addEventListener('pointerdown', handleStart, false);
     canvas.addEventListener('pointermove', handleMove, false);
     canvas.addEventListener('pointerup', handleEnd, false);
     canvas.addEventListener('pointercancel', handleEnd, false);
