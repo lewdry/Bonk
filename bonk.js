@@ -277,7 +277,7 @@ function handleEnd(event) {
     if (grabbedBall) {
         const pos = getEventPos(event);
         const timeDelta = (Date.now() - lastCursorTime) / 1000;
-        const maxVelocity = 15;
+        const maxVelocity = 20;
         grabbedBall.dx = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.x - interactionStartPos.x) / (timeDelta * 10)));
         grabbedBall.dy = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.y - interactionStartPos.y) / (timeDelta * 10)));
         grabbedBall.grabbed = false;
