@@ -216,14 +216,14 @@ function gameLoop(currentTime) {
         ctx.font = '16px Serif';
         
         // Collision counter
-        const counterText = `${collisionCount} bonks`;
+        const counterText = `${collisionCount} Bonks`;
         const textWidth = ctx.measureText(counterText).width;
-        ctx.fillText(counterText, canvas.width - textWidth - 10, 16);
+        ctx.fillText(counterText, canvas.width - textWidth - 6, 16);
         
         // Stopped time counter
         if (stoppedFor > 0) {
-            const stoppedText = `wow! stopped for ${stoppedFor}s`;
-            ctx.fillText(stoppedText, 10, 16);
+            const stoppedText = `Wow! Stopped for ${stoppedFor}s`;
+            ctx.fillText(stoppedText, 6, 16);
         }
 
         lastTime = currentTime;
