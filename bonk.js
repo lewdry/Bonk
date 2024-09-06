@@ -302,7 +302,7 @@ function handleMove(event) {
         const dx = pos.x - lastGrabbedPos.x;
         const dy = pos.y - lastGrabbedPos.y;
         const speed = Math.sqrt(dx * dx + dy * dy);
-        const maxSpeed = 16;
+        const maxSpeed = 30;
         const normalizedSpeed = Math.min(speed, maxSpeed) / maxSpeed;
 
         grabbedBall.x = pos.x;
