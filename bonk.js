@@ -36,6 +36,13 @@ class Ball {
 
     move() {
         if (!this.grabbed) {
+            // Check if the ball is moving very slowly and stop it if it is
+            const velocityThreshold = 0.1;
+            if (Math.abs(this.dx) < velocityThreshold && Math.abs(this.dy) < velocityThreshold) {
+                this.dx = 0;
+                this.dy = 0;
+            }
+    
             this.x += this.dx;
             this.y += this.dy;
             this.resolveBoundaryCollision();
