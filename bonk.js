@@ -5,8 +5,13 @@ const splashScreen = document.getElementById('splashScreen');
 
 // Set canvas size to match window
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+    ctx.scale(dpr, dpr);
 }
 
 // Initial canvas size
@@ -21,8 +26,8 @@ class Ball {
     reset() {
         this.radius = Math.random() * 20 + 10;
         this.mass = Math.PI * this.radius ** 2;
-        this.x = Math.random() * (canvas.width - 2 * this.radius) + this.radius;
-        this.y = Math.random() * (canvas.height - 2 * this.radius) + this.radius;
+        this.x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * this.radius) + this.radius;
+        this.y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * this.radius) + this.radius;
         this.dx = (Math.random() - 0.5) * 5;
         this.dy = (Math.random() - 0.5) * 5;
         this.colour = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
@@ -39,18 +44,20 @@ class Ball {
 
     resolveBoundaryCollision() {
         const margin = 1;
+        const canvasWidth = canvas.width / window.devicePixelRatio;
+        const canvasHeight = canvas.height / window.devicePixelRatio;
         if (this.x - this.radius <= margin) {
             this.x = this.radius + margin;
             this.dx = Math.abs(this.dx);
-        } else if (this.x + this.radius >= canvas.width - margin) {
-            this.x = canvas.width - this.radius - margin;
+        } else if (this.x + this.radius >= canvasWidth - margin) {
+            this.x = canvasWidth - this.radius - margin;
             this.dx = -Math.abs(this.dx);
         }
         if (this.y - this.radius <= margin) {
             this.y = this.radius + margin;
             this.dy = Math.abs(this.dy);
-        } else if (this.y + this.radius >= canvas.height - margin) {
-            this.y = canvas.height - this.radius - margin;
+        } else if (this.y + this.radius >= canvasHeight - margin) {
+            this.y = canvasHeight - this.radius - margin;
             this.dy = -Math.abs(this.dy);
         }
     }
@@ -133,10 +140,13 @@ function initGame() {
         return;
     }
 
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        resetGame();
+    });
     resetGame();
 
-    document.addEventListener('pointerdown', handleStart, false);
+    canvas.addEventListener('pointerdown', handleStart, false);
     canvas.addEventListener('pointermove', handleMove, false);
     canvas.addEventListener('pointerup', handleEnd, false);
     canvas.addEventListener('pointercancel', handleEnd, false);
@@ -192,8 +202,9 @@ function gameLoop(currentTime) {
             ball.draw();
             for (let j = i + 1; j < balls.length; j++) {
                 if (ball.checkCollision(balls[j])) {
-                    ball.resolveCollision(balls[j]);
-                    collisionCount++;
+                    if (ball.resolveCollision(balls[j])) {
+                        collisionCount++;
+                    }
                 }
             }
             if (ball.dx !== 0 || ball.dy !== 0) {
@@ -218,7 +229,7 @@ function gameLoop(currentTime) {
         // Collision counter
         const counterText = `${collisionCount} Bonks`;
         const textWidth = ctx.measureText(counterText).width;
-        ctx.fillText(counterText, canvas.width - textWidth - 6, 16);
+        ctx.fillText(counterText, canvas.width / window.devicePixelRatio - textWidth - 6, 16);
         
         // Stopped time counter
         if (stoppedFor > 0) {
@@ -234,9 +245,11 @@ function gameLoop(currentTime) {
 
 function getEventPos(event) {
     const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
     return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
+        x: (event.clientX - rect.left) * scaleX / window.devicePixelRatio,
+        y: (event.clientY - rect.top) * scaleY / window.devicePixelRatio
     };
 }
 
