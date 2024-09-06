@@ -24,7 +24,7 @@ class Ball {
     }
 
     reset() {
-        this.radius = Math.random() * 23 + 12;
+        this.radius = Math.random() * 18 + 12;
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * this.radius) + this.radius;
         this.y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * this.radius) + this.radius;
@@ -295,7 +295,7 @@ function handleMove(event) {
         const dx = pos.x - lastGrabbedPos.x;
         const dy = pos.y - lastGrabbedPos.y;
         const speed = Math.sqrt(dx * dx + dy * dy);
-        const maxSpeed = 20;
+        const maxSpeed = 16;
         const normalizedSpeed = Math.min(speed, maxSpeed) / maxSpeed;
 
         grabbedBall.x = pos.x;
