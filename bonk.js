@@ -24,7 +24,7 @@ class Ball {
     }
 
     reset() {
-        this.radius = Math.random() * 22 + 13;
+        this.radius = Math.random() * 23 + 12;
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * this.radius) + this.radius;
         this.y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * this.radius) + this.radius;
