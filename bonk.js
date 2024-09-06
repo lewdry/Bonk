@@ -77,7 +77,7 @@ class Ball {
         return distance < this.radius + other.radius;
     }
 
-    resolveCollision(other) {
+     resolveCollision(other) {
         const dx = other.x - this.x;
         const dy = other.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -89,27 +89,35 @@ class Ball {
             const moveX = overlap * Math.cos(angle) / 2;
             const moveY = overlap * Math.sin(angle) / 2;
             
-            this.x -= moveX;
-            this.y -= moveY;
-            other.x += moveX;
-            other.y += moveY;
+            if (!this.grabbed && !other.grabbed) {
+                this.x -= moveX;
+                this.y -= moveY;
+                other.x += moveX;
+                other.y += moveY;
 
-            // Calculate new velocities
-            const normalX = dx / distance;
-            const normalY = dy / distance;
-            const tangentX = -normalY;
-            const tangentY = normalX;
+                // Calculate new velocities
+                const normalX = dx / distance;
+                const normalY = dy / distance;
+                const tangentX = -normalY;
+                const tangentY = normalX;
 
-            const dotProductThis = this.dx * normalX + this.dy * normalY;
-            const dotProductOther = other.dx * normalX + other.dy * normalY;
+                const dotProductThis = this.dx * normalX + this.dy * normalY;
+                const dotProductOther = other.dx * normalX + other.dy * normalY;
 
-            const v1n = (dotProductThis * (this.mass - other.mass) + 2 * other.mass * dotProductOther) / (this.mass + other.mass);
-            const v2n = (dotProductOther * (other.mass - this.mass) + 2 * this.mass * dotProductThis) / (this.mass + other.mass);
+                const v1n = (dotProductThis * (this.mass - other.mass) + 2 * other.mass * dotProductOther) / (this.mass + other.mass);
+                const v2n = (dotProductOther * (other.mass - this.mass) + 2 * this.mass * dotProductThis) / (this.mass + other.mass);
 
-            this.dx = v1n * normalX + (this.dx * tangentX + this.dy * tangentY) * tangentX;
-            this.dy = v1n * normalY + (this.dx * tangentX + this.dy * tangentY) * tangentY;
-            other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
-            other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
+                this.dx = v1n * normalX + (this.dx * tangentX + this.dy * tangentY) * tangentX;
+                this.dy = v1n * normalY + (this.dx * tangentX + this.dy * tangentY) * tangentY;
+                other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
+                other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
+            } else if (this.grabbed) {
+                other.x = this.x + (other.radius + this.radius) * Math.cos(angle);
+                other.y = this.y + (other.radius + this.radius) * Math.sin(angle);
+            } else if (other.grabbed) {
+                this.x = other.x - (other.radius + this.radius) * Math.cos(angle);
+                this.y = other.y - (other.radius + this.radius) * Math.sin(angle);
+            }
 
             return true; // Collision occurred
         }
@@ -186,6 +194,7 @@ function showSplashScreen() {
 
 const FIXED_TIME_STEP = 1000 / 60;
 let lastTime = 0;
+let lastGrabbedPos = null;
 
 function gameLoop(currentTime) {
     if (!gameRunning) {
@@ -199,14 +208,14 @@ function gameLoop(currentTime) {
         let allStopped = true;
         balls.forEach((ball, i) => {
             ball.move();
-            ball.draw();
             for (let j = i + 1; j < balls.length; j++) {
                 if (ball.checkCollision(balls[j])) {
                     if (ball.resolveCollision(balls[j])) {
-                        collisionCount++;
+                        collisionCount++;  // Count collisions
                     }
                 }
             }
+            ball.draw();
             if (ball.dx !== 0 || ball.dy !== 0) {
                 allStopped = false;
             }
@@ -259,6 +268,7 @@ function handleStart(event) {
     const pos = getEventPos(event);
     interactionStartPos = pos;
     lastCursorTime = currentTime;
+    lastGrabbedPos = pos;
 
     if (!gameRunning) {
         splashScreen.style.display = 'none';
@@ -270,6 +280,8 @@ function handleStart(event) {
         if (ball.checkGrabbed(pos)) {
             grabbedBall = ball;
             ball.grabbed = true;
+            ball.dx = 0;
+            ball.dy = 0;
             break;
         }
     }
@@ -280,8 +292,25 @@ function handleMove(event) {
     const pos = getEventPos(event);
 
     if (grabbedBall) {
+        const dx = pos.x - lastGrabbedPos.x;
+        const dy = pos.y - lastGrabbedPos.y;
+        const speed = Math.sqrt(dx * dx + dy * dy);
+        const maxSpeed = 20;
+        const normalizedSpeed = Math.min(speed, maxSpeed) / maxSpeed;
+
         grabbedBall.x = pos.x;
         grabbedBall.y = pos.y;
+
+        balls.forEach(ball => {
+            if (ball !== grabbedBall && grabbedBall.checkCollision(ball)) {
+                const angle = Math.atan2(ball.y - grabbedBall.y, ball.x - grabbedBall.x);
+                const pushForce = 10 * normalizedSpeed;
+                ball.dx += Math.cos(angle) * pushForce;
+                ball.dy += Math.sin(angle) * pushForce;
+            }
+        });
+
+        lastGrabbedPos = pos;
     }
 }
 
