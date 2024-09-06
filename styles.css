@@ -26,6 +26,7 @@ canvas {
     background-color: white; 
     color: black;
     font-size: 16px;
+    font-family: -apple-system, sans-serif;
     text-align: center;
     justify-content: center;
     align-items: center;

@@ -24,7 +24,7 @@ class Ball {
     }
 
     reset() {
-        this.radius = Math.random() * 20 + 10;
+        this.radius = Math.random() * 22 + 13;
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * this.radius) + this.radius;
         this.y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * this.radius) + this.radius;
@@ -233,7 +233,7 @@ function gameLoop(currentTime) {
         }
 
         ctx.fillStyle = 'black';
-        ctx.font = '16px Serif';
+        ctx.font = '16px sans-serif';
         
         // Collision counter
         const counterText = `${collisionCount} Bonks`;
