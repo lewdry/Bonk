@@ -95,7 +95,7 @@ class Ball {
     }
 
     draw() {
-    const edgeWidth = 10;
+    const edgeWidth = 4;
 
     // Draw the main colored part of the ball
     ctx.beginPath();
@@ -109,7 +109,7 @@ class Ball {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius - edgeWidth / 2, 0, Math.PI * 2);
         ctx.lineWidth = edgeWidth;
-        ctx.strokeStyle = 'rgb(85, 85, 85)'; // Grey color
+        ctx.strokeStyle = 'rgb(30, 30, 30)'; // Grey color
         ctx.stroke();
         ctx.closePath();
         }
