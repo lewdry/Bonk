@@ -2,6 +2,9 @@
 const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 const splashScreen = document.getElementById('splashScreen');
+let collisionSound;
+let audioContext;
+let collisionBuffer;
 
 // Set canvas size to match window
 function resizeCanvas() {
@@ -16,6 +19,19 @@ function resizeCanvas() {
 
 // Initial canvas size
 resizeCanvas();
+
+document.addEventListener('DOMContentLoaded', async (event) => {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const response = await fetch('sounds/G2.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        collisionBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        console.log('Audio loaded successfully');
+    } catch (error) {
+        console.error('Failed to load audio:', error);
+    }
+    initGame();
+});
 
 // Ball class
 class Ball {
@@ -36,7 +52,6 @@ class Ball {
 
     move() {
         if (!this.grabbed) {
-            // Check if the ball is moving very slowly and stop it if it is
             const velocityThreshold = 0.1;
             if (Math.abs(this.dx) < velocityThreshold && Math.abs(this.dy) < velocityThreshold) {
                 this.dx = 0;
@@ -84,14 +99,13 @@ class Ball {
         return distance < this.radius + other.radius;
     }
 
-     resolveCollision(other) {
+    resolveCollision(other) {
         const dx = other.x - this.x;
         const dy = other.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const overlap = this.radius + other.radius - distance;
         
         if (overlap > 0) {
-            // Move balls apart
             const angle = Math.atan2(dy, dx);
             const moveX = overlap * Math.cos(angle) / 2;
             const moveY = overlap * Math.sin(angle) / 2;
@@ -102,7 +116,6 @@ class Ball {
                 other.x += moveX;
                 other.y += moveY;
 
-                // Calculate new velocities
                 const normalX = dx / distance;
                 const normalY = dy / distance;
                 const tangentX = -normalY;
@@ -118,6 +131,21 @@ class Ball {
                 this.dy = v1n * normalY + (this.dx * tangentX + this.dy * tangentY) * tangentY;
                 other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
                 other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
+
+                if ((this === lastThrownBall || other === lastThrownBall) && 
+                collisionsAfterThrow < 4 && collisionBuffer) {
+                try {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = collisionBuffer;
+                    source.connect(audioContext.destination);
+                    source.start(0);
+                    collisionsAfterThrow++;
+                } catch (error) {
+                    console.error("Error playing sound:", error);
+                }
+            }
+        
+
             } else if (this.grabbed) {
                 other.x = this.x + (other.radius + this.radius) * Math.cos(angle);
                 other.y = this.y + (other.radius + this.radius) * Math.sin(angle);
@@ -126,9 +154,9 @@ class Ball {
                 this.y = other.y - (other.radius + this.radius) * Math.sin(angle);
             }
 
-            return true; // Collision occurred
+            return true;
         }
-        return false; // No collision
+        return false;
     }
 
     checkGrabbed(pos) {
@@ -148,6 +176,8 @@ let stoppedTime = 0;
 let stoppedFor = 0;
 let allBallsStopped = false;
 let lastStopTime = 0;
+let lastThrownBall = null;
+let collisionsAfterThrow = 0;
 
 function initGame() {
     if (!canvas) {
@@ -178,6 +208,8 @@ function resetGame() {
     stoppedTime = 0;
     stoppedFor = 0;
     allBallsStopped = false;
+    lastThrownBall = null;
+    collisionsAfterThrow = 0;
 }
 
 function separateOverlappingBalls() {
@@ -218,7 +250,7 @@ function gameLoop(currentTime) {
             for (let j = i + 1; j < balls.length; j++) {
                 if (ball.checkCollision(balls[j])) {
                     if (ball.resolveCollision(balls[j])) {
-                        collisionCount++;  // Count collisions
+                        collisionCount++;
                     }
                 }
             }
@@ -242,12 +274,10 @@ function gameLoop(currentTime) {
         ctx.fillStyle = 'black';
         ctx.font = '16px sans-serif';
         
-        // Collision counter
         const counterText = `${collisionCount} Bonks`;
         const textWidth = ctx.measureText(counterText).width;
         ctx.fillText(counterText, canvas.width / window.devicePixelRatio - textWidth - 6, 16);
         
-        // Stopped time counter
         if (stoppedFor > 0) {
             const stoppedText = `Wow! Stopped for ${stoppedFor}s`;
             ctx.fillText(stoppedText, 6, 16);
@@ -289,6 +319,8 @@ function handleStart(event) {
             ball.grabbed = true;
             ball.dx = 0;
             ball.dy = 0;
+            lastThrownBall = null;
+            collisionsAfterThrow = 0;
             break;
         }
     }
@@ -330,6 +362,8 @@ function handleEnd(event) {
         grabbedBall.dx = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.x - interactionStartPos.x) / (timeDelta * 10)));
         grabbedBall.dy = Math.max(-maxVelocity, Math.min(maxVelocity, (pos.y - interactionStartPos.y) / (timeDelta * 10)));
         grabbedBall.grabbed = false;
+        lastThrownBall = grabbedBall;
+        collisionsAfterThrow = 0;
         grabbedBall = null;
     }
 }
