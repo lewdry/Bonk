@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 const splashScreen = document.getElementById('splashScreen');
 let collisionSound;
 let audioContext;
-let collisionBuffer;
+let collisionBuffers = {};
 
 // Set canvas size to match window
 function resizeCanvas() {
@@ -23,10 +23,19 @@ resizeCanvas();
 document.addEventListener('DOMContentLoaded', async (event) => {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const response = await fetch('sounds/G2.mp3');
-        const arrayBuffer = await response.arrayBuffer();
-        collisionBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        console.log('Audio loaded successfully');
+
+        // Load all sound files
+        const soundFiles = ['G2.mp3', 'A2.mp3', 'B2.mp3', 'C2.mp3', 'D2.mp3', 'E2.mp3', 'F#2.mp3', 'G3.mp3'];
+        for (const file of soundFiles) {
+            const response = await fetch(`sounds/${file}`);
+            const arrayBuffer = await response.arrayBuffer();
+            collisionBuffers[file] = await audioContext.decodeAudioData(arrayBuffer);
+            console.log(`Audio file ${file} loaded successfully`);
+        }
+
+        // Call initGame AFTER the sounds are loaded
+        initGame();
+
     } catch (error) {
         console.error('Failed to load audio:', error);
     }
@@ -90,6 +99,14 @@ class Ball {
         ctx.fillStyle = this.colour;
         ctx.fill();
         ctx.closePath();
+
+        if (this === lastThrownBall) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2); // Use half the ball's radius
+            ctx.fillStyle = 'white'; 
+            ctx.fill();
+            ctx.closePath();
+        }
     }
 
     checkCollision(other) {
@@ -132,20 +149,35 @@ class Ball {
                 other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
                 other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
 
-                if ((this === lastThrownBall || other === lastThrownBall) && 
-                collisionsAfterThrow < 4 && collisionBuffer) {
-                try {
+                if ((this === lastThrownBall || other === lastThrownBall) &&
+                collisionsAfterThrow < 9999 && Object.keys(collisionBuffers).length > 0) {
+                    try {
+                    const soundFiles = Object.keys(collisionBuffers);
+                    const randomIndex = Math.floor(Math.random() * soundFiles.length);
+                    const randomSoundFile = soundFiles[randomIndex];
+
+                    // Create a new buffer source and connect it to the destination
                     const source = audioContext.createBufferSource();
-                    source.buffer = collisionBuffer;
+                    source.buffer = collisionBuffers[randomSoundFile];
                     source.connect(audioContext.destination);
-                    source.start(0);
+
+                    // Start the sound immediately
+                    source.start();
+
+                    // Add the new source to the activeSources array
+                    activeSources.push(source);
+
+                    // Cull older sources
+                    if (activeSources.length > 3) {
+                        activeSources.shift().stop(); // Stop the oldest source and remove it
+                    }
+
                     collisionsAfterThrow++;
-                } catch (error) {
+                    } catch (error) {
                     console.error("Error playing sound:", error);
-                }
+                            }
             }
         
-
             } else if (this.grabbed) {
                 other.x = this.x + (other.radius + this.radius) * Math.cos(angle);
                 other.y = this.y + (other.radius + this.radius) * Math.sin(angle);
@@ -178,6 +210,7 @@ let allBallsStopped = false;
 let lastStopTime = 0;
 let lastThrownBall = null;
 let collisionsAfterThrow = 0;
+let activeSources = []; // Array to keep track of active audio sources
 
 function initGame() {
     if (!canvas) {
