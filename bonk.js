@@ -25,7 +25,8 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
         // Load all sound files
-        const soundFiles = ['G2.mp3', 'A2.mp3', 'B2.mp3', 'C2.mp3', 'D2.mp3', 'E2.mp3', 'F#2.mp3', 'G3.mp3'];
+        //const soundFiles = ['G2.mp3', 'A2.mp3', 'B2.mp3', 'C2.mp3', 'D2.mp3', 'E2.mp3', 'F#2.mp3', 'G3.mp3'];
+        const soundFiles = ['G2.mp3', 'B2.mp3', 'D2.mp3', 'G3.mp3'];
         for (const file of soundFiles) {
             const response = await fetch(`sounds/${file}`);
             const arrayBuffer = await response.arrayBuffer();
