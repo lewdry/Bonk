@@ -102,11 +102,13 @@ class Ball {
         ctx.closePath();
 
         if (this === lastThrownBall) {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2); // Use half the ball's radius
-            ctx.fillStyle = 'white'; 
-            ctx.fill();
-            ctx.closePath();
+        // Draw the grey edge
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.lineWidth = 10; // Width of the edge
+        ctx.strokeStyle = 'rgb(85, 85, 85)'; // Grey color
+        ctx.stroke();
+        ctx.closePath();
         }
     }
 
