@@ -95,17 +95,20 @@ class Ball {
     }
 
     draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.colour;
-        ctx.fill();
-        ctx.closePath();
+    const edgeWidth = 10;
 
-        if (this === lastThrownBall) {
+    // Draw the main colored part of the ball
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius - edgeWidth, 0, Math.PI * 2);
+    ctx.fillStyle = this.colour;
+    ctx.fill();
+    ctx.closePath();
+
+    if (this === lastThrownBall) {
         // Draw the grey edge
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.lineWidth = 10; // Width of the edge
+        ctx.arc(this.x, this.y, this.radius - edgeWidth / 2, 0, Math.PI * 2);
+        ctx.lineWidth = edgeWidth;
         ctx.strokeStyle = 'rgb(85, 85, 85)'; // Grey color
         ctx.stroke();
         ctx.closePath();
