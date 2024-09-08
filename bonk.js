@@ -6,11 +6,6 @@ let collisionSound;
 let audioContext;
 let collisionBuffers = {};
 
-// Baseline screen dimensions
-const BASELINE_WIDTH = 1334;
-const BASELINE_HEIGHT = 750;
-const BASELINE_AREA = BASELINE_WIDTH * BASELINE_HEIGHT;
-
 // Drag coefficient
 const DRAG_COEFFICIENT = 0.999;
 
@@ -23,10 +18,6 @@ function resizeCanvas() {
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
     ctx.scale(dpr, dpr);
-
-    // Calculate the scale factor based on screen area
-    const currentArea = rect.width * rect.height;
-    window.ballScaleFactor = Math.sqrt(currentArea / BASELINE_AREA);
 }
 
 // Initial canvas size
@@ -62,9 +53,7 @@ class Ball {
     }
 
     reset() {
-        // Scale the radius based on the screen size
-        const baseRadius = Math.random() * 18 + 12;
-        this.radius = baseRadius * window.ballScaleFactor;
+        this.radius = Math.random() * 18 + 12;
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * this.radius) + this.radius;
         this.y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * this.radius) + this.radius;
