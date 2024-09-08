@@ -101,13 +101,14 @@ class Ball {
         ctx.fill();
         ctx.closePath();
 
+        /* visual cue for lastthrown
         if (this === lastThrownBall) {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2); // Use half the ball's radius
             ctx.fillStyle = 'white'; 
             ctx.fill();
             ctx.closePath();
-        }
+        } */
     }
 
     checkCollision(other) {
@@ -115,6 +116,10 @@ class Ball {
         const dy = this.y - other.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         return distance < this.radius + other.radius;
+    }
+
+    getSpeed() {
+        return Math.sqrt(this.dx * this.dx + this.dy * this.dy);
     }
 
     resolveCollision(other) {
@@ -150,35 +155,36 @@ class Ball {
                 other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
                 other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
 
-                if ((this === lastThrownBall || other === lastThrownBall) &&
-                collisionsAfterThrow < 9999 && Object.keys(collisionBuffers).length > 0) {
+                const speedThreshold = 5;
+                const thisSpeed = this.getSpeed();
+                const otherSpeed = other.getSpeed();
+
+                if ((thisSpeed > speedThreshold || otherSpeed > speedThreshold) && 
+                    Object.keys(collisionBuffers).length > 0) {
                     try {
-                    const soundFiles = Object.keys(collisionBuffers);
-                    const randomIndex = Math.floor(Math.random() * soundFiles.length);
-                    const randomSoundFile = soundFiles[randomIndex];
+                        const soundFiles = Object.keys(collisionBuffers);
+                        const randomIndex = Math.floor(Math.random() * soundFiles.length);
+                        const randomSoundFile = soundFiles[randomIndex];
 
-                    // Create a new buffer source and connect it to the destination
-                    const source = audioContext.createBufferSource();
-                    source.buffer = collisionBuffers[randomSoundFile];
-                    source.connect(audioContext.destination);
+                        // Create a new buffer source and connect it to the destination
+                        const source = audioContext.createBufferSource();
+                        source.buffer = collisionBuffers[randomSoundFile];
+                        source.connect(audioContext.destination);
 
-                    // Start the sound immediately
-                    source.start();
+                        // Start the sound immediately
+                        source.start();
 
-                    // Add the new source to the activeSources array
-                    activeSources.push(source);
+                        // Add the new source to the activeSources array
+                        activeSources.push(source);
 
-                    // Cull older sources
-                    if (activeSources.length > 3) {
-                        activeSources.shift().stop(); // Stop the oldest source and remove it
-                    }
-
-                    collisionsAfterThrow++;
+                        // Cull older sources
+                        if (activeSources.length > 3) {
+                            activeSources.shift().stop(); // Stop the oldest source and remove it
+                        }
                     } catch (error) {
-                    console.error("Error playing sound:", error);
-                            }
-            }
-        
+                        console.error("Error playing sound:", error);
+                    }
+                }
             } else if (this.grabbed) {
                 other.x = this.x + (other.radius + this.radius) * Math.cos(angle);
                 other.y = this.y + (other.radius + this.radius) * Math.sin(angle);
