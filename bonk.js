@@ -23,7 +23,7 @@ resizeCanvas();
 document.addEventListener('DOMContentLoaded', async (event) => {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
+        
         // Load all sound files
         const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
         for (const file of soundFiles) {
@@ -33,13 +33,15 @@ document.addEventListener('DOMContentLoaded', async (event) => {
             console.log(`Audio file ${file} loaded successfully`);
         }
 
-        // Call initGame AFTER the sounds are loaded
+        // Initialize game after sounds are loaded
         initGame();
+
+        // Add visibility change listener
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
     } catch (error) {
         console.error('Failed to load audio:', error);
     }
-    initGame();
 });
 
 // Ball class
@@ -158,7 +160,7 @@ class Ball {
                 other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
 
                 const minSpeed = 0;
-                const maxSpeed = 16;
+                const maxSpeed = 30;
                 const minVolume = 0.2; // 20% minimum volume
                 const thisSpeed = this.getSpeed();
                 const otherSpeed = other.getSpeed();
@@ -258,6 +260,32 @@ function initGame() {
 
     showSplashScreen();
     requestAnimationFrame(gameLoop);
+}
+
+function resumeAudioContext() {
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log('AudioContext resumed successfully');
+            gameState.audioResumed = true;
+        }).catch(error => {
+            console.error('Failed to resume AudioContext:', error);
+        });
+    }
+}
+
+function handleVisibilityChange() {
+    if (!document.hidden && splashScreenDismissed) {
+        reinitializeGameState();
+    }
+}
+
+function reinitializeGameState() {
+    resumeAudioContext();
+    if (!gameState.running) {
+        gameRunning = true;
+        gameState.running = true;
+        requestAnimationFrame(gameLoop);
+    }
 }
 
 function resetGame() {
