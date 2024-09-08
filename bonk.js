@@ -95,11 +95,14 @@ class Ball {
     }
 
     draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.colour;
-        ctx.fill();
-        ctx.closePath();
+    const edgeWidth = 4;
+
+    // Draw the main colored part of the ball
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = this.colour;
+    ctx.fill();
+    ctx.closePath();
 
         /* visual cue for lastthrown
         if (this === lastThrownBall) {
