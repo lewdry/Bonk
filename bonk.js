@@ -158,12 +158,14 @@ class Ball {
                 other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
                 other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
 
-                const speedThreshold = 5;
+                const minSpeed = 0;
+                const maxSpeed = 16;
+                const minVolume = 0.2; // 20% minimum volume
                 const thisSpeed = this.getSpeed();
                 const otherSpeed = other.getSpeed();
+                const collisionSpeed = Math.max(thisSpeed, otherSpeed);
 
-                if ((thisSpeed > speedThreshold || otherSpeed > speedThreshold) && 
-                    Object.keys(collisionBuffers).length > 0) {
+                if (collisionSpeed > minSpeed && Object.keys(collisionBuffers).length > 0) {
                     try {
                         const soundFiles = Object.keys(collisionBuffers);
                         const randomIndex = Math.floor(Math.random() * soundFiles.length);
@@ -172,7 +174,20 @@ class Ball {
                         // Create a new buffer source and connect it to the destination
                         const source = audioContext.createBufferSource();
                         source.buffer = collisionBuffers[randomSoundFile];
-                        source.connect(audioContext.destination);
+
+                        // Create a gain node to control the volume
+                        const gainNode = audioContext.createGain();
+                        
+                        // Calculate the volume based on collision speed with a minimum volume
+                        const normalizedSpeed = (collisionSpeed - minSpeed) / (maxSpeed - minSpeed);
+                        const volume = minVolume + (1 - minVolume) * normalizedSpeed;
+                        const clampedVolume = Math.min(Math.max(volume, minVolume), 1);
+                        
+                        gainNode.gain.setValueAtTime(clampedVolume, audioContext.currentTime);
+
+                        // Connect the source to the gain node, then to the destination
+                        source.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
 
                         // Start the sound immediately
                         source.start();
@@ -181,9 +196,11 @@ class Ball {
                         activeSources.push(source);
 
                         // Cull older sources
-                        if (activeSources.length > 3) {
+                        if (activeSources.length > 20) {
                             activeSources.shift().stop(); // Stop the oldest source and remove it
                         }
+
+                        console.log(`Collision speed: ${collisionSpeed.toFixed(2)}, Volume: ${clampedVolume.toFixed(2)}`);
                     } catch (error) {
                         console.error("Error playing sound:", error);
                     }
