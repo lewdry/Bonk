@@ -6,7 +6,15 @@ let collisionSound;
 let audioContext;
 let collisionBuffers = {};
 
-// Set canvas size to match window
+// Baseline screen dimensions
+const BASELINE_WIDTH = 1334;
+const BASELINE_HEIGHT = 750;
+const BASELINE_AREA = BASELINE_WIDTH * BASELINE_HEIGHT;
+
+// Drag coefficient
+const DRAG_COEFFICIENT = 0.999;
+
+// Set canvas size to match window and calculate scale factor
 function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -15,6 +23,10 @@ function resizeCanvas() {
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
     ctx.scale(dpr, dpr);
+
+    // Calculate the scale factor based on screen area
+    const currentArea = rect.width * rect.height;
+    window.ballScaleFactor = Math.sqrt(currentArea / BASELINE_AREA);
 }
 
 // Initial canvas size
@@ -44,14 +56,15 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     }
 });
 
-// Ball class
 class Ball {
     constructor() {
         this.reset();
     }
 
     reset() {
-        this.radius = Math.random() * 18 + 12;
+        // Scale the radius based on the screen size
+        const baseRadius = Math.random() * 18 + 12;
+        this.radius = baseRadius * window.ballScaleFactor;
         this.mass = Math.PI * this.radius ** 2;
         this.x = Math.random() * (canvas.width / window.devicePixelRatio - 2 * this.radius) + this.radius;
         this.y = Math.random() * (canvas.height / window.devicePixelRatio - 2 * this.radius) + this.radius;
@@ -63,6 +76,10 @@ class Ball {
 
     move() {
         if (!this.grabbed) {
+            // Apply drag to slow down the ball
+            this.dx *= DRAG_COEFFICIENT;
+            this.dy *= DRAG_COEFFICIENT;
+
             const velocityThreshold = 0.1;
             if (Math.abs(this.dx) < velocityThreshold && Math.abs(this.dy) < velocityThreshold) {
                 this.dx = 0;
