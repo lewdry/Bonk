@@ -110,15 +110,6 @@ class Ball {
     ctx.fillStyle = this.colour;
     ctx.fill();
     ctx.closePath();
-
-        /* visual cue for lastthrown
-        if (this === lastThrownBall) {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2); // Use half the ball's radius
-            ctx.fillStyle = 'white'; 
-            ctx.fill();
-            ctx.closePath();
-        } */
     }
 
     checkCollision(other) {
