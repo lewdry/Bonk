@@ -246,6 +246,8 @@ let lastThrownBall = null;
 let collisionsAfterThrow = 0;
 let activeSources = []; // Array to keep track of active audio sources
 
+let splashScreenDismissed = false;
+
 function initGame() {
     if (!canvas) {
         console.error('Canvas element not found');
@@ -400,9 +402,10 @@ function handleStart(event) {
     lastCursorTime = currentTime;
     lastGrabbedPos = pos;
 
-    if (!gameRunning) {
+    if (!splashScreenDismissed) {
         splashScreen.style.display = 'none';
         gameRunning = true;
+        splashScreenDismissed = true;
         return;
     }
 
