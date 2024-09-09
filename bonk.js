@@ -140,48 +140,61 @@ class Ball {
         
         if (overlap > 0) {
             const angle = Math.atan2(dy, dx);
-            const moveX = overlap * Math.cos(angle) / 2;
-            const moveY = overlap * Math.sin(angle) / 2;
+            const separationDistance = 1; // 1px separation
+            const totalSeparation = overlap + separationDistance;
+            const moveX = totalSeparation * Math.cos(angle) / 2;
+            const moveY = totalSeparation * Math.sin(angle) / 2;
             
             if (!this.grabbed && !other.grabbed) {
+                // Separate the balls
                 this.x -= moveX;
                 this.y -= moveY;
                 other.x += moveX;
                 other.y += moveY;
-
+    
+                // Collision counting logic
+                if (this.lastCollidedWith !== other && this.collisionCooldown <= 0 && other.collisionCooldown <= 0) {
+                    collisionCount++;
+                    this.lastCollidedWith = other;
+                    other.lastCollidedWith = this;
+                    this.collisionCooldown = 5; // Set cooldown for 5 frames
+                    other.collisionCooldown = 5;
+                }
+    
+                // Velocity resolution
                 const normalX = dx / distance;
                 const normalY = dy / distance;
                 const tangentX = -normalY;
                 const tangentY = normalX;
-
+    
                 const dotProductThis = this.dx * normalX + this.dy * normalY;
                 const dotProductOther = other.dx * normalX + other.dy * normalY;
-
+    
                 const v1n = (dotProductThis * (this.mass - other.mass) + 2 * other.mass * dotProductOther) / (this.mass + other.mass);
                 const v2n = (dotProductOther * (other.mass - this.mass) + 2 * this.mass * dotProductThis) / (this.mass + other.mass);
-
+    
                 this.dx = v1n * normalX + (this.dx * tangentX + this.dy * tangentY) * tangentX;
                 this.dy = v1n * normalY + (this.dx * tangentX + this.dy * tangentY) * tangentY;
                 other.dx = v2n * normalX + (other.dx * tangentX + other.dy * tangentY) * tangentX;
                 other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
-
+    
                 const minSpeed = 0;
                 const maxSpeed = 30;
                 const minVolume = 0.2; // 20% minimum volume
                 const thisSpeed = this.getSpeed();
                 const otherSpeed = other.getSpeed();
                 const collisionSpeed = Math.max(thisSpeed, otherSpeed);
-
+    
                 if (collisionSpeed > minSpeed && Object.keys(collisionBuffers).length > 0) {
                     try {
                         const soundFiles = Object.keys(collisionBuffers);
                         const randomIndex = Math.floor(Math.random() * soundFiles.length);
                         const randomSoundFile = soundFiles[randomIndex];
-
+    
                         // Create a new buffer source and connect it to the destination
                         const source = audioContext.createBufferSource();
                         source.buffer = collisionBuffers[randomSoundFile];
-
+    
                         // Create a gain node to control the volume
                         const gainNode = audioContext.createGain();
                         
@@ -191,36 +204,42 @@ class Ball {
                         const clampedVolume = Math.min(Math.max(volume, minVolume), 1);
                         
                         gainNode.gain.setValueAtTime(clampedVolume, audioContext.currentTime);
-
+    
                         // Connect the source to the gain node, then to the destination
                         source.connect(gainNode);
                         gainNode.connect(audioContext.destination);
-
+    
                         // Start the sound immediately
                         source.start();
-
+    
                         // Add the new source to the activeSources array
                         activeSources.push(source);
-
+    
                         // Cull older sources
                         if (activeSources.length > 20) {
                             activeSources.shift().stop(); // Stop the oldest source and remove it
                         }
-
+    
                         console.log(`Collision speed: ${collisionSpeed.toFixed(2)}, Volume: ${clampedVolume.toFixed(2)}`);
                     } catch (error) {
                         console.error("Error playing sound:", error);
                     }
                 }
             } else if (this.grabbed) {
-                other.x = this.x + (other.radius + this.radius) * Math.cos(angle);
-                other.y = this.y + (other.radius + this.radius) * Math.sin(angle);
+                other.x = this.x + (other.radius + this.radius + separationDistance) * Math.cos(angle);
+                other.y = this.y + (other.radius + this.radius + separationDistance) * Math.sin(angle);
             } else if (other.grabbed) {
-                this.x = other.x - (other.radius + this.radius) * Math.cos(angle);
-                this.y = other.y - (other.radius + this.radius) * Math.sin(angle);
+                this.x = other.x - (other.radius + this.radius + separationDistance) * Math.cos(angle);
+                this.y = other.y - (other.radius + this.radius + separationDistance) * Math.sin(angle);
             }
-
+    
             return true;
+        } else {
+            // Reset lastCollidedWith if balls are not touching
+            if (this.lastCollidedWith === other) {
+                this.lastCollidedWith = null;
+                other.lastCollidedWith = null;
+            }
         }
         return false;
     }
