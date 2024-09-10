@@ -276,8 +276,20 @@ function initGame() {
     canvas.addEventListener('pointercancel', handleEnd, false);
     canvas.addEventListener('dblclick', handleDoubleTap, false);
 
+    // Add this new event listener for the splash screen
+    document.addEventListener('pointerdown', dismissSplashScreen, false);
+
     showSplashScreen();
     requestAnimationFrame(gameLoop);
+}
+
+function dismissSplashScreen() {
+    if (splashScreen.style.display !== 'none') {
+        splashScreen.style.display = 'none';
+        gameRunning = true;
+        splashScreenDismissed = true;
+        reinitializeGameState();
+    }
 }
 
 function resumeAudioContext() {
@@ -292,7 +304,8 @@ function resumeAudioContext() {
 }
 
 function handleVisibilityChange() {
-    if (!document.hidden && splashScreenDismissed) {
+    if (!document.hidden) {
+        showSplashScreen();
         reinitializeGameState();
     }
 }
@@ -334,6 +347,8 @@ function separateOverlappingBalls() {
 
 function showSplashScreen() {
     splashScreen.style.display = 'flex';
+    gameRunning = false;
+    splashScreenDismissed = false;
 }
 
 const FIXED_TIME_STEP = 1000 / 60;
@@ -411,13 +426,6 @@ function handleStart(event) {
     interactionStartPos = pos;
     lastCursorTime = currentTime;
     lastGrabbedPos = pos;
-
-    if (!splashScreenDismissed) {
-        splashScreen.style.display = 'none';
-        gameRunning = true;
-        splashScreenDismissed = true;
-        return;
-    }
 
     for (const ball of balls) {
         if (ball.checkGrabbed(pos)) {
