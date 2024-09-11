@@ -23,7 +23,7 @@ In Bonk, there is intentionally no option to change the number of balls or size 
 I will take no further questions on missing functionality.
 
 ## Sound
-~~ In a previous python iteration of the game, I had a short audio file (beep.wav) play when there was a collision (or 'bonk') between two balls. Completely impractical. You'll observe how quickly bonks occur and the bonk counter climbs, the noise was near-constant. I have removed audio for your sanity and mine.~~
+~~In a previous python iteration of the game, I had a short audio file (beep.wav) play when there was a collision (or 'bonk') between two balls. Completely impractical. You'll observe how quickly bonks occur and the bonk counter climbs, the noise was near-constant. I have removed audio for your sanity and mine.~~
 
 I have (at great personal effort) recorded my own series of collision sounds which I believe I have implemented in a melodic, comforting and not at all annoying way. For music geeks, I recorded the notes in Ableton Lite Live, using an Arturia Minilab Mkii, playing the 'Basic Analog Chime' instrument (with reverb and space set to zero). The notes are a G Major arpeggio from G2 to G4. I've been on a journey adding these sounds and I completely love the way it has turned out.
 
