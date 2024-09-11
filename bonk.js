@@ -393,6 +393,7 @@ function gameLoop(currentTime) {
             }
         } else {
             allBallsStopped = false;
+            stoppedFor = 0; // Reset the counter when balls start moving
         }
 
         ctx.fillStyle = 'black';
@@ -402,7 +403,7 @@ function gameLoop(currentTime) {
         const textWidth = ctx.measureText(counterText).width;
         ctx.fillText(counterText, canvas.width / window.devicePixelRatio - textWidth - 6, 16);
         
-        if (stoppedFor > 0) {
+        if (allBallsStopped && stoppedFor > 0) {
             const stoppedText = `Wow! Stopped for ${stoppedFor}s`;
             ctx.fillText(stoppedText, 6, 16);
         }
