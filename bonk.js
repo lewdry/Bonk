@@ -2,9 +2,6 @@
 const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 const splashScreen = document.getElementById('splashScreen');
-let collisionSound;
-let audioContext;
-let collisionBuffers = {};
 
 // Drag coefficient
 const DRAG_COEFFICIENT = 0.999;
@@ -255,8 +252,15 @@ let lastStopTime = 0;
 let lastThrownBall = null;
 let collisionsAfterThrow = 0;
 let activeSources = []; // Array to keep track of active audio sources
-
 let splashScreenDismissed = false;
+let collisionSound;
+let audioContext;
+let collisionBuffers = {};
+let gameState = {
+    running: false,
+    audioResumed: false
+};
+
 
 function initGame() {
     if (!canvas) {
@@ -276,7 +280,6 @@ function initGame() {
     canvas.addEventListener('pointercancel', handleEnd, false);
     canvas.addEventListener('dblclick', handleDoubleTap, false);
 
-    // Add this new event listener for the splash screen
     document.addEventListener('pointerdown', dismissSplashScreen, false);
 
     showSplashScreen();
@@ -287,6 +290,7 @@ function dismissSplashScreen() {
     if (splashScreen.style.display !== 'none') {
         splashScreen.style.display = 'none';
         gameRunning = true;
+        gameState.running = true;  // Update gameState here
         splashScreenDismissed = true;
         reinitializeGameState();
     }
