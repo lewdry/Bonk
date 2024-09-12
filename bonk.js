@@ -307,10 +307,24 @@ function resumeAudioContext() {
     }
 }
 
+let lastHiddenTime = 0;
+const HIDDEN_THRESHOLD = 5000; // 5 seconds
+
 function handleVisibilityChange() {
-    if (!document.hidden) {
-        showSplashScreen();
-        reinitializeGameState();
+    if (document.hidden) {
+        lastHiddenTime = Date.now();
+    } else {
+        if (Date.now() - lastHiddenTime > HIDDEN_THRESHOLD) {
+            showSplashScreen();
+            reinitializeGameState();
+        } else {
+            resumeAudioContext();
+            if (!gameState.running) {
+                gameRunning = true;
+                gameState.running = true;
+                requestAnimationFrame(gameLoop);
+            }
+        }
     }
 }
 
