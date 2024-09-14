@@ -286,6 +286,7 @@ function initGame() {
         canvas.addEventListener('pointerup', handleEnd, false);
         canvas.addEventListener('pointercancel', handleEnd, false);
         document.addEventListener('pointerdown', dismissSplashScreen, false);
+        canvas.addEventListener('dblclick', handleDoubleTap, false);
     }
 
     showSplashScreen();
