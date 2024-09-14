@@ -274,20 +274,13 @@ function initGame() {
     });
     resetGame();
 
-    if ('ontouchstart' in window) {
-        document.addEventListener('touchstart', handleStart, false);
-        canvas.addEventListener('touchmove', handleMove, false);
-        canvas.addEventListener('touchend', handleEnd, false);
-        canvas.addEventListener('touchcancel', handleEnd, false);
-        document.addEventListener('touchstart', dismissSplashScreen, false);
-    } else {
-        document.addEventListener('pointerdown', handleStart, false);
-        canvas.addEventListener('pointermove', handleMove, false);
-        canvas.addEventListener('pointerup', handleEnd, false);
-        canvas.addEventListener('pointercancel', handleEnd, false);
-        document.addEventListener('pointerdown', dismissSplashScreen, false);
-        canvas.addEventListener('dblclick', handleDoubleTap, false);
-    }
+    document.addEventListener('pointerdown', handleStart, false);
+    canvas.addEventListener('pointermove', handleMove, false);
+    canvas.addEventListener('pointerup', handleEnd, false);
+    canvas.addEventListener('pointercancel', handleEnd, false);
+    document.addEventListener('pointerdown', dismissSplashScreen, false);
+    canvas.addEventListener('dblclick', handleDoubleTap, false);
+
 
     showSplashScreen();
     // Start the game loop immediately, but don't render balls until splash screen is dismissed
