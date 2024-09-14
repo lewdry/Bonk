@@ -287,6 +287,7 @@ function initGame() {
 }
 
 function dismissSplashScreen() {
+    console.log("Dismissing splash screen");
     if (splashScreen.style.display !== 'none') {
         splashScreen.style.display = 'none';
         gameRunning = true;
@@ -308,7 +309,7 @@ function resumeAudioContext() {
 }
 
 let lastHiddenTime = 0;
-const HIDDEN_THRESHOLD = 5000; // 5 seconds
+const HIDDEN_THRESHOLD = 10000; // 10 seconds
 
 function handleVisibilityChange() {
     if (document.hidden) {
@@ -364,6 +365,7 @@ function separateOverlappingBalls() {
 }
 
 function showSplashScreen() {
+    console.log("Showing splash screen");
     splashScreen.style.display = 'flex';
     gameRunning = false;
     splashScreenDismissed = false;
