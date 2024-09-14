@@ -20,44 +20,75 @@ function resizeCanvas() {
 // Initial canvas size
 resizeCanvas();
 
-let soundsLoaded = false;
+document.addEventListener('DOMContentLoaded', async (event) => {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Load all sound files
+        const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
+        for (const file of soundFiles) {
+            const response = await fetch(`sounds/${file}`);
+            const arrayBuffer = await response.arrayBuffer();
+            collisionBuffers[file] = await audioContext.decodeAudioData(arrayBuffer);
+            console.log(`Audio file ${file} loaded successfully`);
+        }
 
 document.addEventListener('DOMContentLoaded', async (event) => {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Initialize game first
-        initGame();
+        // Load all sound files
+        const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
+        for (const file of soundFiles) {
+            const response = await fetch(`sounds/${file}`);
+            const arrayBuffer = await response.arrayBuffer();
+            collisionBuffers[file] = await audioContext.decodeAudioData(arrayBuffer);
+            console.log(`Audio file ${file} loaded successfully`);
+        }
 
-        // Load sounds in the background
-        loadSounds().then(() => {
-            console.log('All sounds loaded successfully');
-            soundsLoaded = true;
-        }).catch(error => {
-            console.error('Failed to load some sounds:', error);
-        });
+        // Initialize game after sounds are loaded
+        document.addEventListener('DOMContentLoaded', async (event) => {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Load all sound files
+        const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
+        for (const file of soundFiles) {
+            const response = await fetch(`sounds/${file}`);
+            const arrayBuffer = await response.arrayBuffer();
+            collisionBuffers[file] = await audioContext.decodeAudioData(arrayBuffer);
+            console.log(`Audio file ${file} loaded successfully`);
+        }
+
+        // Initialize game after sounds are loaded
+        if (!splashScreenDismissed){
+        initGame();
+        }
+
+        // Add visibility change listener
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
     } catch (error) {
-        console.error('Failed to create audio context:', error);
+        console.error('Failed to load audio:', error);
+    }
+});
+        initGame();
+
+        // Add visibility change listener
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    } catch (error) {
+        console.error('Failed to load audio:', error);
     }
 });
 
-async function loadSounds() {
-    const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
-    const loadPromises = soundFiles.map(async (file) => {
-        try {
-            const response = await fetch(`sounds/${file}`);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-            collisionBuffers[file] = audioBuffer;
-            console.log(`Audio file ${file} loaded successfully`);
-        } catch (error) {
-            console.error(`Failed to load audio file ${file}:`, error);
-        }
-    });
+        // Add visibility change listener
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    await Promise.all(loadPromises);
-}
+    } catch (error) {
+        console.error('Failed to load audio:', error);
+    }
+});
 
 class Ball {
     constructor() {
@@ -182,52 +213,52 @@ class Ball {
                 other.dy = v2n * normalY + (other.dx * tangentX + other.dy * tangentY) * tangentY;
     
                 const minSpeed = 0;
-        const maxSpeed = 30;
-        const minVolume = 0.2; // 20% minimum volume
-        const thisSpeed = this.getSpeed();
-        const otherSpeed = other.getSpeed();
-        const collisionSpeed = Math.max(thisSpeed, otherSpeed);
-
-        if (collisionSpeed > minSpeed && soundsLoaded && Object.keys(collisionBuffers).length > 0) {
-            try {
-                const soundFiles = Object.keys(collisionBuffers);
-                const randomIndex = Math.floor(Math.random() * soundFiles.length);
-                const randomSoundFile = soundFiles[randomIndex];
-
-                // Create a new buffer source and connect it to the destination
-                const source = audioContext.createBufferSource();
-                source.buffer = collisionBuffers[randomSoundFile];
-
-                // Create a gain node to control the volume
-                const gainNode = audioContext.createGain();
-                
-                // Calculate the volume based on collision speed with a minimum volume
-                const normalizedSpeed = (collisionSpeed - minSpeed) / (maxSpeed - minSpeed);
-                const volume = minVolume + (1 - minVolume) * normalizedSpeed;
-                const clampedVolume = Math.min(Math.max(volume, minVolume), 1);
-                
-                gainNode.gain.setValueAtTime(clampedVolume, audioContext.currentTime);
-
-                // Connect the source to the gain node, then to the destination
-                source.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                // Start the sound immediately
-                source.start();
-
-                // Add the new source to the activeSources array
-                activeSources.push(source);
-
-                // Cull older sources
-                if (activeSources.length > 20) {
-                    activeSources.shift().stop(); // Stop the oldest source and remove it
+                const maxSpeed = 30;
+                const minVolume = 0.2; // 20% minimum volume
+                const thisSpeed = this.getSpeed();
+                const otherSpeed = other.getSpeed();
+                const collisionSpeed = Math.max(thisSpeed, otherSpeed);
+    
+                if (collisionSpeed > minSpeed && Object.keys(collisionBuffers).length > 0) {
+                    try {
+                        const soundFiles = Object.keys(collisionBuffers);
+                        const randomIndex = Math.floor(Math.random() * soundFiles.length);
+                        const randomSoundFile = soundFiles[randomIndex];
+    
+                        // Create a new buffer source and connect it to the destination
+                        const source = audioContext.createBufferSource();
+                        source.buffer = collisionBuffers[randomSoundFile];
+    
+                        // Create a gain node to control the volume
+                        const gainNode = audioContext.createGain();
+                        
+                        // Calculate the volume based on collision speed with a minimum volume
+                        const normalizedSpeed = (collisionSpeed - minSpeed) / (maxSpeed - minSpeed);
+                        const volume = minVolume + (1 - minVolume) * normalizedSpeed;
+                        const clampedVolume = Math.min(Math.max(volume, minVolume), 1);
+                        
+                        gainNode.gain.setValueAtTime(clampedVolume, audioContext.currentTime);
+    
+                        // Connect the source to the gain node, then to the destination
+                        source.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+    
+                        // Start the sound immediately
+                        source.start();
+    
+                        // Add the new source to the activeSources array
+                        activeSources.push(source);
+    
+                        // Cull older sources
+                        if (activeSources.length > 20) {
+                            activeSources.shift().stop(); // Stop the oldest source and remove it
+                        }
+    
+                        console.log(`Collision speed: ${collisionSpeed.toFixed(2)}, Volume: ${clampedVolume.toFixed(2)}`);
+                    } catch (error) {
+                        console.error("Error playing sound:", error);
+                    }
                 }
-
-                console.log(`Collision speed: ${collisionSpeed.toFixed(2)}, Volume: ${clampedVolume.toFixed(2)}`);
-            } catch (error) {
-                console.error("Error playing sound:", error);
-            }
-        }
             } else if (this.grabbed) {
                 other.x = this.x + (other.radius + this.radius + separationDistance) * Math.cos(angle);
                 other.y = this.y + (other.radius + this.radius + separationDistance) * Math.sin(angle);
@@ -297,16 +328,11 @@ function initGame() {
 
     document.addEventListener('pointerdown', dismissSplashScreen, false);
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
     showSplashScreen();
-    gameRunning = true;
-    gameState.running = true;
     requestAnimationFrame(gameLoop);
 }
 
 function dismissSplashScreen() {
-    console.log("Dismissing splash screen");
     if (splashScreen.style.display !== 'none') {
         splashScreen.style.display = 'none';
         gameRunning = true;
@@ -328,7 +354,7 @@ function resumeAudioContext() {
 }
 
 let lastHiddenTime = 0;
-const HIDDEN_THRESHOLD = 10000; // 10 seconds
+const HIDDEN_THRESHOLD = 5000; // 5 seconds
 
 function handleVisibilityChange() {
     if (document.hidden) {
@@ -384,7 +410,6 @@ function separateOverlappingBalls() {
 }
 
 function showSplashScreen() {
-    console.log("Showing splash screen");
     splashScreen.style.display = 'flex';
     gameRunning = false;
     splashScreenDismissed = false;
