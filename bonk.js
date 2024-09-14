@@ -278,48 +278,33 @@ function initGame() {
     canvas.addEventListener('pointermove', handleMove, false);
     canvas.addEventListener('pointerup', handleEnd, false);
     canvas.addEventListener('pointercancel', handleEnd, false);
-    document.addEventListener('pointerdown', dismissSplashScreen, false);
     canvas.addEventListener('dblclick', handleDoubleTap, false);
 
+    document.addEventListener('pointerdown', dismissSplashScreen, false);
 
     showSplashScreen();
-    // Start the game loop immediately, but don't render balls until splash screen is dismissed
-    gameRunning = true;
-    gameState.running = true;
     requestAnimationFrame(gameLoop);
 }
 
 function dismissSplashScreen() {
     if (splashScreen.style.display !== 'none') {
-        console.log('Dismissing splash screen');
         splashScreen.style.display = 'none';
         gameRunning = true;
-        gameState.running = true;
+        gameState.running = true;  // Update gameState here
         splashScreenDismissed = true;
-        resumeAudioContext().then(() => {
-            reinitializeGameState();
-        }).catch(error => {
-            console.error('Failed to resume audio context:', error);
-            showSplashScreen();
-        });
+        reinitializeGameState();
     }
 }
 
 function resumeAudioContext() {
-    return new Promise((resolve, reject) => {
-        if (audioContext.state === 'suspended') {
-            audioContext.resume().then(() => {
-                console.log('AudioContext resumed successfully');
-                gameState.audioResumed = true;
-                resolve();
-            }).catch(error => {
-                console.error('Failed to resume AudioContext:', error);
-                reject(error);
-            });
-        } else {
-            resolve();
-        }
-    });
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log('AudioContext resumed successfully');
+            gameState.audioResumed = true;
+        }).catch(error => {
+            console.error('Failed to resume AudioContext:', error);
+        });
+    }
 }
 
 let lastHiddenTime = 0;
@@ -328,44 +313,28 @@ const HIDDEN_THRESHOLD = 5000; // 5 seconds
 function handleVisibilityChange() {
     if (document.hidden) {
         lastHiddenTime = Date.now();
-        // Don't stop the game loop here, just pause audio
-        if (audioContext) {
-            audioContext.suspend();
-        }
     } else {
         if (Date.now() - lastHiddenTime > HIDDEN_THRESHOLD) {
             showSplashScreen();
             reinitializeGameState();
         } else {
-            resumeAudioContext().then(() => {
-                if (!gameState.running) {
-                    gameRunning = true;
-                    gameState.running = true;
-                    if (!animationFrameId) {
-                        animationFrameId = requestAnimationFrame(gameLoop);
-                    }
-                }
-            }).catch(error => {
-                console.error('Failed to resume audio context:', error);
-                showSplashScreen();
-            });
+            resumeAudioContext();
+            if (!gameState.running) {
+                gameRunning = true;
+                gameState.running = true;
+                requestAnimationFrame(gameLoop);
+            }
         }
     }
 }
 
 function reinitializeGameState() {
-    resumeAudioContext().then(() => {
-        if (!gameState.running) {
-            gameRunning = true;
-            gameState.running = true;
-            if (!animationFrameId) {
-                animationFrameId = requestAnimationFrame(gameLoop);
-            }
-        }
-    }).catch(error => {
-        console.error('Failed to resume audio context:', error);
-        showSplashScreen();
-    });
+    resumeAudioContext();
+    if (!gameState.running) {
+        gameRunning = true;
+        gameState.running = true;
+        requestAnimationFrame(gameLoop);
+    }
 }
 
 function resetGame() {
@@ -395,79 +364,68 @@ function separateOverlappingBalls() {
 }
 
 function showSplashScreen() {
-    console.log('Showing splash screen');
-    console.log('Current game state:', gameState);
-    console.log('Last hidden time:', lastHiddenTime);
-    console.log('Current time:', Date.now());
-    console.log('Time since last hidden:', Date.now() - lastHiddenTime);
-    console.log('Audio context state:', audioContext.state);
-    
     splashScreen.style.display = 'flex';
+    gameRunning = false;
     splashScreenDismissed = false;
-    // Don't set gameRunning to false here, let the game loop continue
 }
 
 const FIXED_TIME_STEP = 1000 / 60;
 let lastTime = 0;
 let lastGrabbedPos = null;
-let animationFrameId = null;
 
 function gameLoop(currentTime) {
-    if (!gameState.running) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
+    if (!gameRunning) {
+        requestAnimationFrame(gameLoop);
         return;
     }
 
     if (currentTime - lastTime >= FIXED_TIME_STEP) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (splashScreenDismissed) {
-            let allStopped = true;
-            balls.forEach((ball, i) => {
-                ball.move();
-                for (let j = i + 1; j < balls.length; j++) {
-                    if (ball.checkCollision(balls[j])) {
-                        if (ball.resolveCollision(balls[j])) {
-                            collisionCount++;
-                        }
+        let allStopped = true;
+        balls.forEach((ball, i) => {
+            ball.move();
+            for (let j = i + 1; j < balls.length; j++) {
+                if (ball.checkCollision(balls[j])) {
+                    if (ball.resolveCollision(balls[j])) {
+                        collisionCount++;
                     }
                 }
-                ball.draw();
-                if (ball.dx !== 0 || ball.dy !== 0) {
-                    allStopped = false;
-                }
-            });
+            }
+            ball.draw();
+            if (ball.dx !== 0 || ball.dy !== 0) {
+                allStopped = false;
+            }
+        });
 
-            if (allStopped) {
-                if (!allBallsStopped) {
-                    allBallsStopped = true;
-                    lastStopTime = currentTime;
-                } else {
-                    stoppedFor = Math.floor((currentTime - lastStopTime) / 1000);
-                }
+        if (allStopped) {
+            if (!allBallsStopped) {
+                allBallsStopped = true;
+                lastStopTime = currentTime;
             } else {
-                allBallsStopped = false;
-                stoppedFor = 0; // Reset the counter when balls start moving
+                stoppedFor = Math.floor((currentTime - lastStopTime) / 1000);
             }
+        } else {
+            allBallsStopped = false;
+            stoppedFor = 0; // Reset the counter when balls start moving
+        }
 
-            ctx.fillStyle = 'black';
-            ctx.font = '16px sans-serif';
-            
-            const counterText = `${collisionCount} Bonks`;
-            const textWidth = ctx.measureText(counterText).width;
-            ctx.fillText(counterText, canvas.width / window.devicePixelRatio - textWidth - 6, 16);
-            
-            if (allBallsStopped && stoppedFor > 0) {
-                const stoppedText = `Wow! Stopped for ${stoppedFor}s`;
-                ctx.fillText(stoppedText, 6, 16);
-            }
+        ctx.fillStyle = 'black';
+        ctx.font = '16px sans-serif';
+        
+        const counterText = `${collisionCount} Bonks`;
+        const textWidth = ctx.measureText(counterText).width;
+        ctx.fillText(counterText, canvas.width / window.devicePixelRatio - textWidth - 6, 16);
+        
+        if (allBallsStopped && stoppedFor > 0) {
+            const stoppedText = `Wow! Stopped for ${stoppedFor}s`;
+            ctx.fillText(stoppedText, 6, 16);
         }
 
         lastTime = currentTime;
     }
 
-    animationFrameId = requestAnimationFrame(gameLoop);
+    requestAnimationFrame(gameLoop);
 }
 
 function getEventPos(event) {
