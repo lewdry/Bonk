@@ -24,14 +24,24 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-        // Load all sound files
         const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
-        for (const file of soundFiles) {
-            const response = await fetch(`sounds/${file}`);
-            const arrayBuffer = await response.arrayBuffer();
-            collisionBuffers[file] = await audioContext.decodeAudioData(arrayBuffer);
-            console.log(`Audio file ${file} loaded successfully`);
-        }
+
+        const loadAudioFile = async (file) => {
+            try {
+                const response = await fetch(`sounds/${file}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                const audioData = await audioContext.decodeAudioData(arrayBuffer);
+                collisionBuffers[file] = audioData;
+                console.log(`Audio file ${file} loaded successfully`);
+            } catch (error) {
+                console.error(`Error loading audio file ${file}:`, error);
+            }
+        };
+
+        await Promise.all(soundFiles.map(loadAudioFile));
 
         // Initialize game after sounds are loaded
         if (!splashScreenDismissed) {
@@ -42,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
     } catch (error) {
-        console.error('Failed to load audio:', error);
+        console.error('Error initializing audio context:', error);
     }
 });
 
