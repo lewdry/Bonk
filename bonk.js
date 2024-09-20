@@ -23,20 +23,7 @@ resizeCanvas();
 document.addEventListener('DOMContentLoaded', async (event) => {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Load all sound files
-        const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
-        for (const file of soundFiles) {
-            const response = await fetch(`sounds/${file}`);
-            const arrayBuffer = await response.arrayBuffer();
-            collisionBuffers[file] = await audioContext.decodeAudioData(arrayBuffer);
-            console.log(`Audio file ${file} loaded successfully`);
-        }
 
-document.addEventListener('DOMContentLoaded', async (event) => {
-    try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
         // Load all sound files
         const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
         for (const file of soundFiles) {
@@ -47,40 +34,9 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         }
 
         // Initialize game after sounds are loaded
-        document.addEventListener('DOMContentLoaded', async (event) => {
-    try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Load all sound files
-        const soundFiles = ['G2.mp3', 'B2.mp3', 'D3.mp3', 'G3.mp3', 'B3.mp3', 'D4.mp3', 'G4.mp3'];
-        for (const file of soundFiles) {
-            const response = await fetch(`sounds/${file}`);
-            const arrayBuffer = await response.arrayBuffer();
-            collisionBuffers[file] = await audioContext.decodeAudioData(arrayBuffer);
-            console.log(`Audio file ${file} loaded successfully`);
+        if (!splashScreenDismissed) {
+            initGame();
         }
-
-        // Initialize game after sounds are loaded
-        if (!splashScreenDismissed){
-        initGame();
-        }
-
-        // Add visibility change listener
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    } catch (error) {
-        console.error('Failed to load audio:', error);
-    }
-});
-        initGame();
-
-        // Add visibility change listener
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    } catch (error) {
-        console.error('Failed to load audio:', error);
-    }
-});
 
         // Add visibility change listener
         document.addEventListener('visibilitychange', handleVisibilityChange);
