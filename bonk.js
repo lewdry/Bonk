@@ -280,10 +280,6 @@ function initGame() {
         return;
     }
 
-    window.addEventListener('resize', () => {
-        resizeCanvas();
-        resetGame();
-    });
     resetGame();
 
     document.addEventListener('pointerdown', handleStart, false);
@@ -321,6 +317,29 @@ function resumeAudioContext() {
 
 let lastHiddenTime = 0;
 const HIDDEN_THRESHOLD = 5000; // 5 seconds
+
+// Handle window resizing
+function handleResize() {
+    const oldWidth = canvas.width;
+    const oldHeight = canvas.height;
+    
+    resizeCanvas();
+    
+    const widthRatio = canvas.width / oldWidth;
+    const heightRatio = canvas.height / oldHeight;
+    
+    balls.forEach(ball => {
+        ball.x *= widthRatio;
+        ball.y *= heightRatio;
+        ball.dx *= widthRatio;
+        ball.dy *= heightRatio;
+    });
+}
+
+window.addEventListener('resize', () => {
+    handleResize();
+    separateOverlappingBalls();
+});
 
 function handleVisibilityChange() {
     if (document.hidden) {
