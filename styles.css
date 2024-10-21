@@ -36,10 +36,14 @@ canvas {
     padding: 20px;
 }
 
+/* Unused button, to add to splash screen
+
 button {
     margin-top: 5px;
     padding: 0.3rem 20px;
     font-size: 16px;
+    color: black;
+    background-color: #f0f0f0;
     border: 2px solid #ccc;
     border-radius: 5px;
     cursor: pointer;
@@ -50,3 +54,4 @@ button:hover {
     background-color: #f0f0f0;
     border-color: #999;
 }
+*/
