@@ -288,7 +288,9 @@ function initGame() {
     canvas.addEventListener('pointercancel', handleEnd, false);
     canvas.addEventListener('dblclick', handleDoubleTap, false);
 
-    document.addEventListener('pointerdown', dismissSplashScreen, false);
+    document.getElementById('startButton').addEventListener('click', dismissSplashScreen, false);
+    
+    /* document.addEventListener('pointerdown', dismissSplashScreen, false); */
 
     showSplashScreen();
     requestAnimationFrame(gameLoop);
